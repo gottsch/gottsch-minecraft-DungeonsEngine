@@ -19,8 +19,10 @@ import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.model.Level;
 import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.gottschcore.Quantity;
+import com.someguyssoftware.gottschcore.enums.Direction;
 import com.someguyssoftware.gottschcore.positional.Coords;
 import com.someguyssoftware.gottschcore.positional.ICoords;
+import com.someguyssoftware.gottschcore.random.RandomHelper;
 
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -83,7 +85,7 @@ public class LevelVisualizer {
 				new BlockPos(Math.min(roomField.maxX+(w/2), levelField.maxX), 0, 
 						Math.min(roomField.maxZ+(d/2), levelField.maxZ)));
 		
-		
+		// test - add an extra planned room
 		List<Room> plannedRooms = new ArrayList<>();
 		
 		RoomBuilder roomBuilder = new RoomBuilder(random, roomField, startPoint, config);		
@@ -92,7 +94,14 @@ public class LevelVisualizer {
 		builder.setRoomBuilder(roomBuilder);
 		
 		Room startRoom = roomBuilder.buildStartRoom();
+//		Room extraRoom = new Room().setDegrees(3)
+//				.setDepth(10).setWidth(10).setAnchor(true)
+//				.setCoords(new Coords(startRoom.getCoords().getX(), 0, startRoom.getCoords().getZ() - 20))
+//				.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
+//		extraRoom.setDistance(extraRoom.getCenter().getDistanceSq(startPoint));
+		
 		plannedRooms.add(startRoom);
+//		plannedRooms.add(extraRoom);
 		Room endRoom =endRoomBuilder.buildEndRoom(plannedRooms);//.setAnchor(false);
 
 		Level level = builder
@@ -101,6 +110,7 @@ public class LevelVisualizer {
 			.withField(levelField)					// TODO optional - get from room builder
 			.withStartRoom(startRoom)
 			.withEndRoom(endRoom)
+//			.withRoom(extraRoom)
 			.build();
 		
 		System.out.println(level);

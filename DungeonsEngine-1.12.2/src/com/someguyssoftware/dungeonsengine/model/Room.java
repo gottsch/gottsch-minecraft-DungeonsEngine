@@ -417,8 +417,9 @@ public class Room {
 	/**
 	 * @param distance the distance to set
 	 */
-	public void setDistance(double distance) {
+	public Room setDistance(double distance) {
 		this.distance = distance;
+		return this;
 	}
 
 	/**

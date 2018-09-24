@@ -180,18 +180,7 @@ public class RoomBuilder {
 		/*
 		 * the end room of the level.
 		 */
-
-//		/*
-//		 * change the distance that the end room can be from startpoint.
-//		 * (this chance only affects the end room).
-//		 */
-//		double factor = 2.0;
-//		LevelConfig c2 = new LevelConfig(getConfig());
-//		Quantity qx = new Quantity(c2.getXDistance().getMin(), c2.getXDistance().getMax()*factor);
-//		Quantity qz = new Quantity(c2.getZDistance().getMin(), c2.getZDistance().getMax()*factor);
-//		c2.setXDistance(qx);
-//		c2.setZDistance(qz);
-		
+	
 		// build the end room
 		Room endRoom  = buildPlannedRoom(plannedRooms).setEnd(true).setAnchor(true).setType(Type.LADDER);
 		// ensure min dimensions are met for start room

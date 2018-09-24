@@ -12,6 +12,7 @@ import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
 import com.someguyssoftware.dungeonsengine.builder.LevelBuilder;
+import com.someguyssoftware.dungeonsengine.graph.Wayline;
 import com.someguyssoftware.dungeonsengine.graph.mst.Edge;
 import com.someguyssoftware.dungeonsengine.model.Level;
 import com.someguyssoftware.dungeonsengine.model.Room;
@@ -158,22 +159,31 @@ public class LevelPanel extends JPanel {
         }
         
 		// draw the paths first
-		g.setColor(Color.RED);
-		// draw all path edges
-		for (Edge e : builder.getPaths()) {
-			if (e.v < level.getRooms().size() && e.w < level.getRooms().size()) {
-				Room room1 = level.getRooms().get(e.v);
-				Room room2 = level.getRooms().get(e.w);				
-				g.drawLine(
-						fieldStartX + (int)(room1.getCenter().getX()*sizeMultiplier), 
-						fieldStartY + (int)(room1.getCenter().getZ()*sizeMultiplier), 
-						fieldStartX + (int)(room2.getCenter().getX()*sizeMultiplier), 
-						fieldStartY + (int)(room2.getCenter().getZ()*sizeMultiplier));
-			}
-			else {
-//				logger.info("Skipping edge v/w with index of :" + e.v + ", " + e.w);
-			}
-		}
+//		g.setColor(Color.RED);
+//		// draw all path edges
+//		for (Edge e : builder.getPaths()) {
+//			if (e.v < level.getRooms().size() && e.w < level.getRooms().size()) {
+//				Room room1 = level.getRooms().get(e.v);
+//				Room room2 = level.getRooms().get(e.w);				
+//				g.drawLine(
+//						fieldStartX + (int)(room1.getCenter().getX()*sizeMultiplier), 
+//						fieldStartY + (int)(room1.getCenter().getZ()*sizeMultiplier), 
+//						fieldStartX + (int)(room2.getCenter().getX()*sizeMultiplier), 
+//						fieldStartY + (int)(room2.getCenter().getZ()*sizeMultiplier));
+//			}
+//			else {
+////				logger.info("Skipping edge v/w with index of :" + e.v + ", " + e.w);
+//			}
+//		}
         
+		// draw the wayliens
+		g2d.setColor(Color.BLUE);
+		for (Wayline w : builder.getWaylines()) {
+			g2d.drawLine(
+					fieldStartX + (int)(w.getPoint1().getX()*sizeMultiplier),
+							fieldStartY + (int)(w.getPoint1().getZ()*sizeMultiplier),
+					fieldStartX + (int)(w.getPoint2().getX()*sizeMultiplier),
+							fieldStartY + (int)(w.getPoint2().getZ()*sizeMultiplier));
+		}
 	}
 }
