@@ -11,6 +11,7 @@ import java.awt.RenderingHints;
 
 import javax.swing.JPanel;
 
+import com.someguyssoftware.dungeonsengine.builder.LevelBuilder;
 import com.someguyssoftware.dungeonsengine.model.Level;
 import com.someguyssoftware.dungeonsengine.model.Room;
 
@@ -20,6 +21,8 @@ import com.someguyssoftware.dungeonsengine.model.Room;
  */
 public class LevelPanel extends JPanel {
 	private Level level;
+	private LevelBuilder builder;
+	
 	public static int CANVAS_WIDTH = 850;
 	public static int CANVAS_HEIGHT = 650;
 	public static int CANVAS_START_X = 250;
@@ -28,9 +31,10 @@ public class LevelPanel extends JPanel {
 	/**
 	 * 
 	 */
-	public LevelPanel(Level level) {
+	public LevelPanel(Level level, LevelBuilder builder) {
 		super();
 		this.level = level;
+		this.builder = builder;
 	}
 
 	@Override
@@ -53,7 +57,7 @@ public class LevelPanel extends JPanel {
         g2d.setFont(new Font("Verdana", Font.BOLD, 14));
         g2d.setColor(Color.BLACK);
         String title = "Dungeons2! Level Visualizer 2";
-        g2d.drawString(title, 200, 15);
+        g2d.drawString(title, 300, 15);
 
         // draw map border area
         g2d.setColor(Color.BLACK);		
@@ -74,8 +78,24 @@ public class LevelPanel extends JPanel {
         g2d.setColor(new Color(0, 128, 0));	
         g2d.fillRect(fieldStartX, fieldStartY, 	fieldWidth, fieldDepth);
 
-        // setup the font
+        // setup the generated properties title
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Verdana", Font.BOLD, 10));
+        g2d.drawString("Generated Properties", 10, 30);
+        
         g2d.setFont(new Font("Verdana", Font.PLAIN, 9));
+        g2d.drawString("# of Spawned Rooms: " + builder.getSpawned().size(), 10, 40);
+        g2d.drawString("# of Rooms Lost to Distance Buffering: " + builder.getRoomLossToDistanceBuffering(), 10, 50);
+        g2d.drawString("# of Rooms Lost to Validation: " + builder.getRoomLossToValidation(), 10, 60);
+        int totalLoss = builder.getRoomLossToDistanceBuffering() + builder.getRoomLossToValidation();
+        double totalLossPercent = ((double)totalLoss / (double)builder.getSpawned().size())*100;
+        g2d.drawString(String.format("Total # of Rooms Lost : %d (%1.2f%%)", totalLoss, totalLossPercent), 10, 70);
+        g2d.drawString("# of Actual Rooms: " + level.getRooms().size(), 10, 80);
+
+
+        // write some properties
+        g2d.setColor(Color.BLACK);
+
         
         // normalize rooms
         for (Room room : level.getRooms()) {

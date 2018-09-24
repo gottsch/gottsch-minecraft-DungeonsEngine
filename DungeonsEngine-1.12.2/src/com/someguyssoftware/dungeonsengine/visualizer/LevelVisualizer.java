@@ -71,10 +71,9 @@ public class LevelVisualizer {
 		
 		ICoords startPoint = new Coords(100, 0, 100);
 		AxisAlignedBB levelField = new AxisAlignedBB(new BlockPos(0,0,0), new BlockPos(200, 0, 200));
-		AxisAlignedBB roomField = new AxisAlignedBB(new BlockPos(70,0,70), new BlockPos(130, 0, 130));
+		AxisAlignedBB roomField = new AxisAlignedBB(new BlockPos(60,0,60), new BlockPos(140, 0, 140));
 		int w = (int) Math.abs(roomField.maxX - roomField.minX);
 		int d = (int) Math.abs(roomField.maxZ - roomField.minZ);
-		// TODO can not be > field dimensions
 		AxisAlignedBB endField = new AxisAlignedBB(
 				new BlockPos(Math.max(roomField.minX-(w/2), levelField.minX), 0,
 						Math.max(roomField.minZ-(d/2), levelField.minZ)),
@@ -108,7 +107,7 @@ public class LevelVisualizer {
 		// visualize the level
 		// draw out rectangles
 		JFrame window = new JFrame();
-		JPanel panel = new LevelPanel(level);
+		JPanel panel = new LevelPanel(level, builder);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setBounds(0, 0, 1400, 750);
 		window.add(panel);

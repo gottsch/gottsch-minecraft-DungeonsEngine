@@ -16,6 +16,7 @@ import java.util.Stack;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,7 +29,6 @@ import com.someguyssoftware.dungeonsengine.graph.mst.LazyPrimMST;
 import com.someguyssoftware.dungeonsengine.model.Door;
 import com.someguyssoftware.dungeonsengine.model.Hallway;
 import com.someguyssoftware.dungeonsengine.model.Level;
-import com.someguyssoftware.dungeonsengine.model.LevelArtifacts;
 import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.dungeonsengine.model.Room.Type;
 import com.someguyssoftware.dungeonsengine.model.Shaft;
@@ -100,9 +100,48 @@ public class LevelBuilder {
 	private Random random;
 
 	/*
+	 * rooms that are randomly generated
+	 */
+	List<Room> spawned = null;
+
+	/*
+	 * special rooms which are designed as <em>fixed position</em>. ex. ladder rooms, treasure rooms, boss rooms.
+	 * these rooms' positions will typically be pre-determined in a location that meets all criteria.
+	 * these rooms <em>will</em> be included in the resultant level.
+	 */
+	List<Room> anchors = new ArrayList<>();
+
+	/*
+	 * resultant list of buffered/spaced rooms on a single level.
+	 */
+	List<Room> rooms = null;
+
+	/*
+	 * resultant list of edges from triangulation of rooms.
+	 */
+	List<Edge> edges = null;
+
+	/*
+	 * resultant list of edges from performing minimum spanning tree on edges
+	 */
+	List<Edge> paths = null;
+
+	/*
+	 * resultant list of horizontal and vertical lines representing hallways that connect all the rooms together
+	 * by "squaring off" the paths
+	 */
+	List<Wayline> waylines = null;
+	
+	/*
+	 * resultant list of hallways derived from waylines
+	 */
+	List<Hallway> hallways = null;
+	
+	/*
 	 * where the start room should generate if it is not provided
 	 */
 	private ICoords startPoint;
+	
 	private List<Room> plannedRooms;
 	
 	/*
@@ -113,20 +152,24 @@ public class LevelBuilder {
 	/*
 	 * field width
 	 */
-	int fieldWidth;
+//	int fieldWidth;
 	
 	/*
 	 * field depth
 	 */
-	int fieldDepth;
+//	int fieldDepth;
 	
 	/*
 	 * the min coords of the field
 	 */
 	private ICoords origin;
+	
 	private Level level;
-	private LevelArtifacts artifacts;
 	private RoomBuilder roomBuilder;
+	
+	int roomLossToDistanceBuffering = 0;
+	
+	int roomLossToValidation = 0;
 	
 	/**
 	 * 
@@ -136,7 +179,6 @@ public class LevelBuilder {
 		this.random = random;
 		this.config = new LevelConfig();
 		this.plannedRooms = new ArrayList<>();
-		this.artifacts = new LevelArtifacts();
 	}
 	
 	/**
@@ -144,10 +186,8 @@ public class LevelBuilder {
 	 * @param config
 	 */
 	public LevelBuilder(World world, Random random, LevelConfig config) {
-		this.world = world;
-		this.random = random;
+		this(world, random);
 		this.config = config;
-		this.artifacts = new LevelArtifacts();
 	}
 	
 	public LevelBuilder withRoomBuilder(RoomBuilder builder) {
@@ -198,44 +238,6 @@ public class LevelBuilder {
 		// TODO do property checks - ensure there is a start room, end room, etc and create if necessary
 		
 		/*
-		 * special rooms which are designed as <em>fixed position</em>. ex. ladder rooms, treasure rooms, boss rooms.
-		 * these rooms' positions will typically be pre-determined in a location that meets all criteria.
-		 * these rooms <em>will</em> be included in the resultant level.
-		 */
-		List<Room> anchors = new ArrayList<>();
-
-		/*
-		 * rooms that are randomly generated
-		 */
-		List<Room> spawned = null;
-
-		/*
-		 * resultant list of buffered/spaced rooms on a single level.
-		 */
-		List<Room> rooms = null;
-
-		/*
-		 * resultant list of edges from triangulation of rooms.
-		 */
-		List<Edge> edges = null;
-
-		/*
-		 * resultant list of edges from performing minimum spanning tree on edges
-		 */
-		List<Edge> paths = null;
-
-		/*
-		 * resultant list of horizontal and vertical lines representing hallways that connect all the rooms together
-		 * by "squaring off" the paths
-		 */
-		List<Wayline> waylines = null;
-		
-		/*
-		 * resultant list of hallways derived from waylines
-		 */
-		List<Hallway> hallways = null;
-		
-		/*
 		 * return object containing all the rooms that meet build criteria and the locations of the special rooms.
 		 */
 		Level level = new Level();
@@ -260,8 +262,8 @@ public class LevelBuilder {
 //		level.setDepth(startPoint.getZ() + Math.abs(getConfig().getZDistance().getMinInt()) + Math.abs(getConfig().getZDistance().getMaxInt()) );
 		setLevel(level);
 		
-		this.fieldWidth = (int) (field.maxX - field.minX);
-		this.fieldDepth = (int) (field.maxZ - field.minZ);
+//		this.fieldWidth = (int) (field.maxX - field.minX);
+//		this.fieldDepth = (int) (field.maxZ - field.minZ);
 		
 		// TODO ensure that the field exists
 		// TODO ensure that start point falls within field
@@ -292,19 +294,71 @@ public class LevelBuilder {
 		 *  move apart any intersecting rooms (uses anti-grav method). this current method uses anti-grav from the spawn only.
 		 *  TODO refactor to use anti-grav against all rooms where force is lessened the greater the dist the rooms are from each other.
 		 */
-		rooms = applyDistanceBuffering(getRandom(), roomBuilder.getStartPoint(), anchors, spawned, getConfig());
+		this.rooms = applyDistanceBuffering(getRandom(), roomBuilder.getStartPoint(), anchors, spawned, getConfig());
 		logger.debug("After Apply Distance Buffering Rooms.size=" + rooms.size());
-		System.out.println("After Apply Distance Buffering Rooms.size=" + rooms.size() + ", room loss=" + getArtifacts().getRoomLossToDistanceBuffering());
+		System.out.println("After Apply Distance Buffering Rooms.size=" + rooms.size() + ", room loss=" + getRoomLossToDistanceBuffering());
 		
 		// select rooms to use ie. filter out rooms that don't meet criteria
-		rooms = selectValidRooms(rooms);
+		this.rooms = selectValidRooms(this.rooms);
 		logger.debug("After select valid rooms Rooms.size=" + rooms.size());
-		System.out.println("After select valid rooms Rooms.size=" + rooms.size());
+		System.out.println("After select valid rooms Rooms.size=" + rooms.size() + ", room loss=" + getRoomLossToValidation());
+		if (rooms == null || rooms.size() < MIN_NUMBER_OF_ROOMS) {
+			return EMPTY_LEVEL;
+		}
+		
+		// record minimum dimensions of all the rooms
+		Pair<Integer, Integer> minRoomDimensions = calcMinimumRoomDimensions(this.rooms);
+
+		// normalize rooms to positive quadrant
+		offsetRoomCoords(rooms, minRoomDimensions);
+		
+
+		// TODO restoreRoomCoords(rooms, minRoomDimensions);
 		
 		// TODO ensure that start and end room still exist
-		level.setRooms(rooms);
 		
+		// TODO need a Coords.copy() method in GottschCore
+		// TODO need a wrapper for AxisAlignedBB in GottschCore
+		
+		// TODO set all level properties - ensure that all object/collections are cloned so that the level builder can be garbage collected.
+		level.setStartPoint(new Coords(getStartPoint()));
+		level.setStartRoom(startRoom.copy());
+		level.setEndRoom(endRoom.copy());
+		level.setField(new AxisAlignedBB(getField().minX, getField().minY, getField().minZ, getField().maxX, getField().maxY, getField().maxZ ));
+		level.setRooms(new ArrayList<Room>(rooms));
+		// level.setHallways()
+		// level.setShafts()
+		level.setConfig(getConfig().copy());
 		return level;
+	}
+
+	/**
+	 * 
+	 * @param rooms2
+	 * @return
+	 */
+	private Pair<Integer, Integer> calcMinimumRoomDimensions(List<Room> rooms) {
+		int mx = 0;
+		int mz = 0;
+		for (int i = 0; i < rooms.size(); i++) {
+			if (rooms.get(i).getMinX() < mx) mx = rooms.get(i).getMinX();
+			if (rooms.get(i).getMinZ() < mz) mz = rooms.get(i).getMinZ();
+		}
+		return Pair.of(new Integer(mx),  new Integer(mz));
+	}
+	
+	/**
+	 * 
+	 * @param rooms2
+	 * @param minRoomDimensions
+	 */
+	private void offsetRoomCoords(List<Room> rooms2, Pair<Integer, Integer> minRoomDimensions) {
+		// if dimensions are negative, offset all rooms by positive (Math.abs()) amount +1
+		if (minRoomDimensions.getLeft() < 0 || minRoomDimensions.getRight() < 0) {
+			for (Room room : rooms) {
+				room.setCoords(room.getCoords().add(Math.abs(minRoomDimensions.getLeft())+1, 0, Math.abs(minRoomDimensions.getRight())+1));
+			}
+		}
 	}
 
 	/**
@@ -473,7 +527,7 @@ public class LevelBuilder {
 			for (Room room : rooms) {
 				if (room.isReject()) {
 //					logger.info(String.format("Ignoring... room is flagged as rejected."));
-					getArtifacts().incrementLossToDistanceBuffering(1);
+					incrementLossToDistanceBuffering(1);
 					continue;
 				}
 				processCount = 0;
@@ -490,7 +544,7 @@ public class LevelBuilder {
 //								logger.trace("Detected endless loop when positioning room ==> room REJECTED.");
 								System.out.println("Detected endless loop when positioning room ==> room REJECTED.");
 								room.setReject(true);
-								getArtifacts().incrementLossToDistanceBuffering(1);
+								incrementLossToDistanceBuffering(1);
 								continue rooms;
 							}
 							for (Room bufferedRoom : bufferedRooms) {
@@ -510,7 +564,7 @@ public class LevelBuilder {
 //										logger.info("Room is anchored. Remove from level as it can not change position.");
 										System.out.println("Room is anchored. Remove from level as it can not change position.");
 										room.setReject(true);
-										getArtifacts().incrementLossToDistanceBuffering(1);
+										incrementLossToDistanceBuffering(1);
 										continue rooms;
 									}
 									/* determine vector from start point.
@@ -561,9 +615,9 @@ public class LevelBuilder {
 										if (failSafeCount >= 5) {
 											// stop processing this room (ie drop altogether)
 //											logger.info("Unable to position room... rejecting room.");
-											System.out.println("Unable to position room... rejecting room ->" + room);
+											System.out.println("Unable to position room... rejecting room -> " + room.getId());
 											room.setReject(true);
-											getArtifacts().incrementLossToDistanceBuffering(1);
+											incrementLossToDistanceBuffering(1);
 											continue rooms;
 										}
 									}
@@ -586,7 +640,6 @@ public class LevelBuilder {
 				}
 				// add to the level list
 //				logger.info(i + "] Adding room "+ room.getId());
-				System.out.println(i + "] Adding room "+ room.getId());
 				bufferedRooms.add(room);
 				i++;
 			}
@@ -1970,6 +2023,7 @@ public class LevelBuilder {
 			else {
 				logger.debug("Removing room for being outside field bounds -> {}", room);
 				System.out.println("Removing room for being outside field bounds -> " +  room);
+				incrementLossToValidation(1);
 			}
 			
 			// TODO move to method
@@ -1981,6 +2035,7 @@ public class LevelBuilder {
 				}
 				else {
 					logger.debug("Removing room for residing in unloaded chunk -> {}", room);
+					incrementLossToValidation(1);
 				}
 			}
 			
@@ -1990,6 +2045,7 @@ public class LevelBuilder {
 			}
 			else {
 				logger.debug("Removing room for failing constraints -> {}", room);
+				incrementLossToValidation(1);
 			}
 			
 			if (isValid) {
@@ -2003,7 +2059,6 @@ public class LevelBuilder {
 	}
 
 	/**
-	 * TODO this method is checking against Minecraft World criteria - this should happen during render phase, not here
 	 * Ensure the room meets are criteria to be built.
 	 * @param world 
 	 * @param room
@@ -2272,6 +2327,21 @@ public class LevelBuilder {
 		return null;
 	}
 
+	/**
+	 * 	
+	 * @param i
+	 */
+	public void incrementLossToDistanceBuffering(int i) {
+		this.roomLossToDistanceBuffering += i;		
+	}
+	
+	/**
+	 * 
+	 * @param i
+	 */
+	public void incrementLossToValidation(int i) {
+		this.roomLossToValidation += i;
+	}
 	
 	/**
 	 * @return the config
@@ -2406,18 +2476,37 @@ public class LevelBuilder {
 	public void setRoomBuilder(RoomBuilder roomBuilder) {
 		this.roomBuilder = roomBuilder;
 	}
-
+	
 	/**
-	 * @return the artifacts
+	 * 
+	 * @return
 	 */
-	public LevelArtifacts getArtifacts() {
-		return artifacts;
+	public List<Room> getSpawned() {
+		return spawned;
 	}
 
 	/**
-	 * @param artifacts the artifacts to set
+	 * 
+	 * @param spawned
 	 */
-	public void setArtifacts(LevelArtifacts artifacts) {
-		this.artifacts = artifacts;
+	public void setSpawned(List<Room> spawned) {
+		this.spawned = spawned;
+	}
+	
+	
+	public int getRoomLossToDistanceBuffering() {
+		return roomLossToDistanceBuffering;
+	}
+
+	public void setRoomLossToDistanceBuffering(int roomLossToDistanceBuffering) {
+		this.roomLossToDistanceBuffering = roomLossToDistanceBuffering;
+	}
+
+	public int getRoomLossToValidation() {
+		return roomLossToValidation;
+	}
+
+	public void setRoomLossToValidation(int roomLossToValidation) {
+		this.roomLossToValidation = roomLossToValidation;
 	}
 }
