@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.someguyssoftware.dungeons2.Dungeons2;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.graph.Wayline;
 import com.someguyssoftware.dungeonsengine.graph.Waypoint;
@@ -164,13 +165,19 @@ public class LevelBuilder {
 	 */
 	private ICoords origin;
 	
-	private Level level;
+
 	private RoomBuilder roomBuilder;
 	
+	/*
+	 * the number of rooms lost as a result of distance buffering
+	 */
 	int roomLossToDistanceBuffering = 0;
 	
+	/*
+	 * the number of rooms lost as a result of world validation
+	 */
 	int roomLossToValidation = 0;
-	
+		
 	/**
 	 * 
 	 */
@@ -233,37 +240,22 @@ public class LevelBuilder {
 	 * @return
 	 */
 	public Level build() {
-		// TODO change, don't call this, recreate the build() method.
-		
 		// TODO do property checks - ensure there is a start room, end room, etc and create if necessary
+		
+		/*
+		 * local handle to the start room
+		 */
+		Room startRoom = null;
+		
+		/*
+		 *  local handle to the end room
+		 */
+		Room endRoom = null;
 		
 		/*
 		 * return object containing all the rooms that meet build criteria and the locations of the special rooms.
 		 */
 		Level level = new Level();
-		
-		/*
-		 * handle to the start room
-		 */
-		Room startRoom = null;
-		
-		/*
-		 *  handle to the end room
-		 */
-		Room endRoom = null;
-
-		
-		// calculate start point (beginning ICoords of level bounding box)
-		level.setStartPoint(startPoint);
-		// TODO should level have the field or the width/depth  or both? w/d can be derived from field and vice versa
-		level.setField(this.field);
-		// TODO redo these as dimensions of the field
-//		level.setWidth(startPoint.getX() + Math.abs(getConfig().getXDistance().getMinInt()) + Math.abs(getConfig().getXDistance().getMaxInt()) );
-//		level.setDepth(startPoint.getZ() + Math.abs(getConfig().getZDistance().getMinInt()) + Math.abs(getConfig().getZDistance().getMaxInt()) );
-		setLevel(level);
-		
-//		this.fieldWidth = (int) (field.maxX - field.minX);
-//		this.fieldDepth = (int) (field.maxZ - field.minZ);
 		
 		// TODO ensure that the field exists
 		// TODO ensure that start point falls within field
@@ -273,9 +265,6 @@ public class LevelBuilder {
 		
 		// add randomly generated rooms
 		spawned = spawnRooms();
-		
-//		logger.debug();
-		System.out.println("Spawned.size=" + spawned.size());
 
 		// process all predefined rooms and categorize
 		for (Room room : plannedRooms) {
@@ -300,9 +289,9 @@ public class LevelBuilder {
 		
 		// select rooms to use ie. filter out rooms that don't meet criteria
 		this.rooms = selectValidRooms(this.rooms);
-		logger.debug("After select valid rooms Rooms.size=" + rooms.size());
-		System.out.println("After select valid rooms Rooms.size=" + rooms.size() + ", room loss=" + getRoomLossToValidation());
-		if (rooms == null || rooms.size() < MIN_NUMBER_OF_ROOMS) {
+		logger.debug("After select valid rooms Rooms.size=" + this.rooms.size());
+		System.out.println("After select valid rooms Rooms.size=" + this.rooms.size() + ", room loss=" + getRoomLossToValidation());
+		if (this.rooms == null || rooms.size() < MIN_NUMBER_OF_ROOMS) {
 			return EMPTY_LEVEL;
 		}
 		
@@ -310,9 +299,25 @@ public class LevelBuilder {
 		Pair<Integer, Integer> minRoomDimensions = calcMinimumRoomDimensions(this.rooms);
 
 		// normalize rooms to positive quadrant
-		offsetRoomCoords(rooms, minRoomDimensions);
+		offsetRoomCoords(this.rooms, minRoomDimensions);
 		
-
+		// triangulate valid rooms
+		this.edges = triangulate(this.rooms);
+		if (edges == null) {
+			return EMPTY_LEVEL;
+		}
+		
+		// get the mst
+		this.paths = calculatePaths(this.random, edges, this.rooms, config);
+		
+		// use a BFS from start to end to ensure a path still exists
+		logger.debug("StartRoom.id=" + startRoom.getId());
+		logger.debug("EndRoom.id=" + endRoom.getId());
+		if (!BFS(startRoom.getId(), endRoom.getId(), rooms, paths)) {
+			logger.debug("A path doesn't exist from start room to end room on level.");
+			return EMPTY_LEVEL;
+		}
+		
 		// TODO restoreRoomCoords(rooms, minRoomDimensions);
 		
 		// TODO ensure that start and end room still exist
@@ -1093,7 +1098,7 @@ public class LevelBuilder {
 		for (int i = 0 ; i < addtionalEdges; i++) {
 			int pos = rand.nextInt(edges.size());
 			Edge e = edges.get(pos);
-			// TODO ensure that only non-used edges are selected (and doesn't increment the counter)
+			// ensure that only non-used edges are selected (and doesn't increment the counter)
 			Room room1 = rooms.get(e.v);
 			Room room2 = rooms.get(e.w);
 			if (!room1.isEnd() && !room2.isEnd() &&
@@ -2014,7 +2019,7 @@ public class LevelBuilder {
 			boolean isValid = false;
 
 			// check if the room is inside the level bounding box
-			AxisAlignedBB lbb = level.getXZBoundingBox();
+			AxisAlignedBB lbb = getField();
 			AxisAlignedBB rbb = room.getXZBoundingBox();
 			if (rbb.minX > lbb.minX
 					|| rbb.maxX < lbb.maxX) {
@@ -2436,20 +2441,6 @@ public class LevelBuilder {
 	}
 
 	/**
-	 * @return the level
-	 */
-	public Level getLevel() {
-		return level;
-	}
-
-	/**
-	 * @param level the level to set
-	 */
-	private void setLevel(Level level) {
-		this.level = level;
-	}
-
-	/**
 	 * @return the origin
 	 */
 	private ICoords getOrigin() {
@@ -2508,5 +2499,19 @@ public class LevelBuilder {
 
 	public void setRoomLossToValidation(int roomLossToValidation) {
 		this.roomLossToValidation = roomLossToValidation;
+	}
+
+	/**
+	 * @return the paths
+	 */
+	public List<Edge> getPaths() {
+		return paths;
+	}
+
+	/**
+	 * @param paths the paths to set
+	 */
+	public void setPaths(List<Edge> paths) {
+		this.paths = paths;
 	}
 }

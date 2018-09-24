@@ -12,6 +12,7 @@ import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
 import com.someguyssoftware.dungeonsengine.builder.LevelBuilder;
+import com.someguyssoftware.dungeonsengine.graph.mst.Edge;
 import com.someguyssoftware.dungeonsengine.model.Level;
 import com.someguyssoftware.dungeonsengine.model.Room;
 
@@ -57,13 +58,13 @@ public class LevelPanel extends JPanel {
         g2d.setFont(new Font("Verdana", Font.BOLD, 14));
         g2d.setColor(Color.BLACK);
         String title = "Dungeons2! Level Visualizer 2";
-        g2d.drawString(title, 300, 15);
+        g2d.drawString(title, 400, 15);
 
         // draw map border area
         g2d.setColor(Color.BLACK);		
         g2d.fillRoundRect(CANVAS_START_X, CANVAS_START_Y, CANVAS_WIDTH, CANVAS_HEIGHT, 3, 3);
         
-        // normalize field
+        // normalize dungeon field
         // find how many times level.z fits into rect.y
         int width = (int) (level.getField().maxX - level.getField().minX);
         int depth = (int) (level.getField().maxZ - level.getField().minZ);
@@ -78,19 +79,35 @@ public class LevelPanel extends JPanel {
         g2d.setColor(new Color(0, 128, 0));	
         g2d.fillRect(fieldStartX, fieldStartY, 	fieldWidth, fieldDepth);
 
+        // normalize and center level field
+        width = (int) (builder.getRoomBuilder().getField().maxX - builder.getRoomBuilder().getField().minX);
+        depth = (int) (builder.getRoomBuilder().getField().maxZ - builder.getRoomBuilder().getField().minZ);
+        fieldWidth =  (int)(width * sizeMultiplier);
+        fieldDepth =  (int)(depth*sizeMultiplier);
+        int roomFieldStartX = CANVAS_START_X + (CANVAS_WIDTH/2) - (fieldWidth/2);
+        int roomFieldStartY = CANVAS_START_Y + (CANVAS_HEIGHT/2) - (fieldDepth/2);
+        g2d.setColor(new Color(0, 100, 0));	
+        g2d.fillRect(roomFieldStartX, roomFieldStartY, 	fieldWidth, fieldDepth);
+        
         // setup the generated properties title
         g2d.setColor(Color.BLACK);
         g2d.setFont(new Font("Verdana", Font.BOLD, 10));
         g2d.drawString("Generated Properties", 10, 30);
         
         g2d.setFont(new Font("Verdana", Font.PLAIN, 9));
-        g2d.drawString("# of Spawned Rooms: " + builder.getSpawned().size(), 10, 40);
-        g2d.drawString("# of Rooms Lost to Distance Buffering: " + builder.getRoomLossToDistanceBuffering(), 10, 50);
-        g2d.drawString("# of Rooms Lost to Validation: " + builder.getRoomLossToValidation(), 10, 60);
+        // dungeon field size
+        g2d.drawString("Dungeon Field Size: " + (builder.getField().maxX-builder.getField().minX) + " by " +
+        (builder.getField().maxZ-builder.getField().minZ), 10, 40);
+        // level room size
+        g2d.drawString("Room Field Size: " + (builder.getRoomBuilder().getField().maxX-builder.getRoomBuilder().getField().minX) + " by " +
+        (builder.getRoomBuilder().getField().maxZ-builder.getRoomBuilder().getField().minZ), 10, 50);      
+        g2d.drawString("# of Spawned Rooms: " + builder.getSpawned().size(), 10, 60);
+        g2d.drawString("# of Rooms Lost to Distance Buffering: " + builder.getRoomLossToDistanceBuffering(), 10, 70);
+        g2d.drawString("# of Rooms Lost to Validation: " + builder.getRoomLossToValidation(), 10, 80);
         int totalLoss = builder.getRoomLossToDistanceBuffering() + builder.getRoomLossToValidation();
         double totalLossPercent = ((double)totalLoss / (double)builder.getSpawned().size())*100;
-        g2d.drawString(String.format("Total # of Rooms Lost : %d (%1.2f%%)", totalLoss, totalLossPercent), 10, 70);
-        g2d.drawString("# of Actual Rooms: " + level.getRooms().size(), 10, 80);
+        g2d.drawString(String.format("# of Total Rooms Lost : %d (%1.2f%%)", totalLoss, totalLossPercent), 10, 90);
+        g2d.drawString("# of Actual Rooms: " + level.getRooms().size(), 10, 100);
 
 
         // write some properties
@@ -139,5 +156,24 @@ public class LevelPanel extends JPanel {
 					fieldStartX + (int)(room.getCoords().getX()*sizeMultiplier)+2, 
 					fieldStartY + (int)(room.getCoords().getZ()*sizeMultiplier)+10);
         }
+        
+		// draw the paths first
+		g.setColor(Color.RED);
+		// draw all path edges
+		for (Edge e : builder.getPaths()) {
+			if (e.v < level.getRooms().size() && e.w < level.getRooms().size()) {
+				Room room1 = level.getRooms().get(e.v);
+				Room room2 = level.getRooms().get(e.w);				
+				g.drawLine(
+						fieldStartX + (int)(room1.getCenter().getX()*sizeMultiplier), 
+						fieldStartY + (int)(room1.getCenter().getZ()*sizeMultiplier), 
+						fieldStartX + (int)(room2.getCenter().getX()*sizeMultiplier), 
+						fieldStartY + (int)(room2.getCenter().getZ()*sizeMultiplier));
+			}
+			else {
+//				logger.info("Skipping edge v/w with index of :" + e.v + ", " + e.w);
+			}
+		}
+        
 	}
 }

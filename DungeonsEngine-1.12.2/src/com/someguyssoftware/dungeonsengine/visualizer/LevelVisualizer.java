@@ -57,7 +57,7 @@ public class LevelVisualizer {
 		
 		// build a level
 		LevelConfig config = new LevelConfig();
-		config.setNumberOfRooms(new Quantity(20, 35));
+		config.setNumberOfRooms(new Quantity(25, 50)); // VAST = 25-50
 		double factor = 3.2;
 		config.setWidth(new Quantity(5, 15));
 		config.setDepth(new Quantity(5, 15));
@@ -69,6 +69,9 @@ public class LevelVisualizer {
 		config.setMinecraftConstraintsOn(false);
 		config.setSupportOn(false);
 		
+		/*
+		 * setup values for builders
+		 */
 		ICoords startPoint = new Coords(100, 0, 100);
 		AxisAlignedBB levelField = new AxisAlignedBB(new BlockPos(0,0,0), new BlockPos(200, 0, 200));
 		AxisAlignedBB roomField = new AxisAlignedBB(new BlockPos(60,0,60), new BlockPos(140, 0, 140));
@@ -108,6 +111,7 @@ public class LevelVisualizer {
 		// draw out rectangles
 		JFrame window = new JFrame();
 		JPanel panel = new LevelPanel(level, builder);
+		window.setTitle("Dungeons2! Level Visualizer 2");
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setBounds(0, 0, 1400, 750);
 		window.add(panel);
