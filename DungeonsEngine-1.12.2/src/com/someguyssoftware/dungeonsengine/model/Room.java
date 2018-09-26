@@ -1,18 +1,14 @@
 package com.someguyssoftware.dungeonsengine.model;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import com.someguyssoftware.gottschcore.enums.Direction;
 import com.someguyssoftware.gottschcore.positional.Coords;
 import com.someguyssoftware.gottschcore.positional.ICoords;
-import com.someguyssoftware.gottschcore.positional.Intersect;
 import com.someguyssoftware.gottschcore.random.RandomHelper;
 
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 /**
@@ -20,13 +16,14 @@ import net.minecraft.util.math.MathHelper;
  * @author Mark Gottschling on Jul 9, 2016
  *
  */
-public class Room {
-	public static final int MIN_DEPTH = 5;
-	public static final int MIN_WIDTH = 5;
-	public static final int MIN_HEIGHT = 4;
+public class Room implements IRoom {
+//	public static final int MIN_DEPTH = 5;
+//	public static final int MIN_WIDTH = 5;
+//	public static final int MIN_HEIGHT = 4;
 	
 	private int id;
 	private String name;
+	// TODO remove - instead create concrete classes
 	private Type type;
 	private ICoords coords;
 
@@ -37,7 +34,10 @@ public class Room {
 	private Direction direction;
 
 	// TODO not sure what this is for yet... could be a transient property
-	private double distance;
+	// NOTE this is only used in the comparator to sort once before applyDistanceBuffering
+	// TODO remove this from Room and create a new Comparator that takes startPoint in as a constructor param
+	// then the compare() method calcs the distance of each room to the start point
+//	private double distance;
 	
 	private boolean anchor;
 	private boolean obstacle;
@@ -48,10 +48,7 @@ public class Room {
 	// graphing
 	private int degrees;
 	
-	private List<Door> doors;
-	
-	// rendering
-	private boolean rendered;
+	private List<IDoor> doors;
 	
 	/**
 	 * 
@@ -63,17 +60,17 @@ public class Room {
 		setDirection(Direction.SOUTH); // South
 	}
 
-	public String printDimensions() {
-		return String.format("Dimensions -> [w: %d, h: %d, d: %d]", getWidth(), getHeight(), getDepth());
-	}
-	
-	public String printCoords() {
-		return String.format("Coords -> [x: %d, y: %d, z: %d]", getCoords().getX(), getCoords().getY(), getCoords().getZ());
-	}
-	
-	public String printCenter() {
-		return String.format("Center -> [x: %d, y: %d, z: %d]", getCenter().getX(), getCenter().getY(), getCenter().getZ());		
-	}
+//	public String printDimensions() {
+//		return String.format("Dimensions -> [w: %d, h: %d, d: %d]", getWidth(), getHeight(), getDepth());
+//	}
+//	
+//	public String printCoords() {
+//		return String.format("Coords -> [x: %d, y: %d, z: %d]", getCoords().getX(), getCoords().getY(), getCoords().getZ());
+//	}
+//	
+//	public String printCenter() {
+//		return String.format("Center -> [x: %d, y: %d, z: %d]", getCenter().getX(), getCenter().getY(), getCenter().getZ());		
+//	}
 	
 	
 	/**
@@ -115,7 +112,7 @@ public class Room {
 //			setCenter(new Coords(room.getCenter()));
 			setCoords(new Coords(room.getCoords()));
 			setDepth(room.getDepth());
-			setDistance(room.getDistance());
+//			setDistance(room.getDistance());
 			setHeight(room.getHeight());
 //			setQuad(room.getQuad());
 			setWidth(room.getWidth());		
@@ -129,7 +126,7 @@ public class Room {
 			setObstacle(room.isObstacle());
 			
 			// Room and Door ref each other, so make sure to copy without cyclical looping
-			for (Door door : room.getDoors()) {
+			for (IDoor door : room.getDoors()) {
 				Door d = new Door();
 				d.setCoords(door.getCoords());
 				d.setRoom(this);
@@ -144,33 +141,35 @@ public class Room {
 	 * Copy Constructor
 	 * @return
 	 */
-	public Room copy() {
+	@Override
+	public IRoom copy() {
 		return new Room(this);
 	}
 	
-	// TODO this is probably wrong needs to -1 ??
-	/**
-	 * 
-	 * @return
-	 */
-	public AxisAlignedBB getBoundingBox() {
-		BlockPos bp1 = getCoords().toPos();
-		BlockPos bp2 = getCoords().add(getWidth(), getHeight(), getDepth()).toPos();
-		AxisAlignedBB bb = new AxisAlignedBB(bp1, bp2);
-		return bb;
-	}
+//	// TODO this is probably wrong needs to -1 ??
+//	/* (non-Javadoc)
+//	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#getBoundingBox()
+//	 */
+//	@Override
+//	public AxisAlignedBB getBoundingBox() {
+//		BlockPos bp1 = getCoords().toPos();
+//		BlockPos bp2 = getCoords().add(getWidth(), getHeight(), getDepth()).toPos();
+//		AxisAlignedBB bb = new AxisAlignedBB(bp1, bp2);
+//		return bb;
+//	}
 	
-	/**
-	 * Creates a bounding box by the XZ dimensions with a height (Y) of 1
-	 * @return
-	 */
-	public AxisAlignedBB getXZBoundingBox() {
-		BlockPos bp1 = new BlockPos(getCoords().getX(), 0, getCoords().getZ());
-		BlockPos bp2 = getCoords().add(getWidth(), 1, getDepth()).toPos();
-		AxisAlignedBB bb = new AxisAlignedBB(bp1, bp2);
-		return bb;
-	}
+//	/**
+//	 * Creates a bounding box by the XZ dimensions with a height (Y) of 1
+//	 * @return
+//	 */
+//	public AxisAlignedBB getXZBoundingBox() {
+//		BlockPos bp1 = new BlockPos(getCoords().getX(), 0, getCoords().getZ());
+//		BlockPos bp2 = getCoords().add(getWidth(), 1, getDepth()).toPos();
+//		AxisAlignedBB bb = new AxisAlignedBB(bp1, bp2);
+//		return bb;
+//	}
 	
+	// TODO determine if this can be removed - not a function of Room, but of Direction
     /**
      * Get a Facing by it's horizontal index (0-3). The order is S-W-N-E.
      */
@@ -178,135 +177,152 @@ public class Room {
         return EnumFacing.HORIZONTALS[MathHelper.abs(direction % EnumFacing.HORIZONTALS.length)];
     }
     
-	public int getMinX() {
-		return this.getCoords().getX();
-	}
+//	public int getMinX() {
+//		return this.getCoords().getX();
+//	}
+//	
+//	public int getMaxX() {
+//		return this.getCoords().getX() + this.getWidth() - 1;
+//	}
+//	
+//	public int getMinY() {
+//		return this.getCoords().getY();
+//	}
+//	
+//	public int getMaxY() {
+//		return this.getCoords().getY() + this.getHeight() - 1;
+//	}
+//	
+//	/**
+//	 * 
+//	 * @return
+//	 */
+//	public int getMinZ() {
+//		return this.getCoords().getZ();
+//	}
+//	
+//	/**
+//	 * 
+//	 * @return
+//	 */
+//	public int getMaxZ() {
+//		return this.getCoords().getZ() + this.getDepth() - 1;
+//	}
 	
-	public int getMaxX() {
-		return this.getCoords().getX() + this.getWidth() - 1;
-	}
+//	/**
+//	 * Returns a new Room with the force applied at the angle on the XZ plane.
+//	 * @param angle
+//	 * @param force
+//	 * @return
+//	 */
+//	public IRoom addXZForce(double angle, double force) {
+//		double xForce = Math.sin(angle) * force;
+//        double zForce = Math.cos(angle) * force;
+//        
+////        Room room = new Room(this);
+//        IRoom room = copy();
+//        room.setCoords(room.getCoords().add((int)xForce, 0, (int)zForce));
+//        return room;
+//	}
 	
-	public int getMinY() {
-		return this.getCoords().getY();
-	}
+//	/* (non-Javadoc)
+//	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#getCenter()
+//	 */
+//	@Override
+//	public ICoords getCenter() {
+//		int x = this.getCoords().getX()  + ((this.getWidth()-1) / 2) ;
+//		int y = this.getCoords().getY()  + ((this.getHeight()-1) / 2);
+//		int z = this.getCoords().getZ()  + ((this.getDepth()-1) / 2);
+//		ICoords coords = new Coords(x, y, z);
+//		return coords;
+//	}
 	
-	public int getMaxY() {
-		return this.getCoords().getY() + this.getHeight() - 1;
-	}
+//	/**
+//	 * 
+//	 * @return
+//	 */
+//	public ICoords getXZCenter() {
+//		int x = this.getCoords().getX()  + ((this.getWidth()-1) / 2);
+//		int y = this.getCoords().getY();
+//		int z = this.getCoords().getZ()  + ((this.getDepth()-1) / 2);
+//		ICoords coords = new Coords(x, y, z);
+//		return coords;
+//	}
 	
-	/**
-	 * 
-	 * @return
-	 */
-	public int getMinZ() {
-		return this.getCoords().getZ();
-	}
+//	/**
+//	 * 
+//	 * @return
+//	 */
+//	public ICoords getTopCenter() {
+//		int x = this.getCoords().getX()  + ((this.getWidth()-1) / 2);
+//		int y = this.getCoords().getY() + this.getHeight();
+//		int z = this.getCoords().getZ()  + ((this.getDepth()-1) / 2);
+//		ICoords coords = new Coords(x, y, z);
+//		return coords;	
+//	}
 	
-	/**
-	 * 
-	 * @return
-	 */
-	public int getMaxZ() {
-		return this.getCoords().getZ() + this.getDepth() - 1;
-	}
+//	/**
+//	 * 
+//	 * @param room
+//	 * @return
+//	 */
+//	public Intersect getIntersect(IRoom room) {
+//		return Intersect.getIntersect(this.getBoundingBox(), room.getBoundingBox());
+//	}
+//	
+//	/**
+//	 * Returns a new Room with the force applied at the angle on the XZ plane.
+//	 * @param angle
+//	 * @param force
+//	 * @return
+//	 */
+//	public Room addXZForce(double angle, double force) {
+//		double xForce = Math.sin(angle) * force;
+//        double zForce = Math.cos(angle) * force;
+//        
+//        Room room = new Room(this);
+//        room.setCoords(room.getCoords().add((int)xForce, 0, (int)zForce));
+//        return room;
+//	}
 	
-	/**
-	 * 
-	 * @return
-	 */
-	public ICoords getCenter() {
-		int x = this.getCoords().getX()  + ((this.getWidth()-1) / 2) ;
-		int y = this.getCoords().getY()  + ((this.getHeight()-1) / 2);
-		int z = this.getCoords().getZ()  + ((this.getDepth()-1) / 2);
-		ICoords coords = new Coords(x, y, z);
-		return coords;
-	}
+//	/**
+//	 * Comparator to sort by Id
+//	 */
+//	public static Comparator<Room> idComparator = new Comparator<Room>() {
+//		@Override
+//		public int compare(Room p1, Room p2) {
+//			if (p1.getId() > p2.getId()) {
+//				// greater than
+//				return 1;
+//			}
+//			else {
+//				// less than
+//				return -1;
+//			}
+//		}
+//	};
 	
-	/**
-	 * 
-	 * @return
-	 */
-	public ICoords getXZCenter() {
-		int x = this.getCoords().getX()  + ((this.getWidth()-1) / 2);
-		int y = this.getCoords().getY();
-		int z = this.getCoords().getZ()  + ((this.getDepth()-1) / 2);
-		ICoords coords = new Coords(x, y, z);
-		return coords;
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public ICoords getTopCenter() {
-		int x = this.getCoords().getX()  + ((this.getWidth()-1) / 2);
-		int y = this.getCoords().getY() + this.getHeight();
-		int z = this.getCoords().getZ()  + ((this.getDepth()-1) / 2);
-		ICoords coords = new Coords(x, y, z);
-		return coords;	
-	}
-	
-	/**
-	 * 
-	 * @param room
-	 * @return
-	 */
-	public Intersect getIntersect(Room room) {
-		return Intersect.getIntersect(this.getBoundingBox(), room.getBoundingBox());
-	}
-	
-	/**
-	 * Returns a new Room with the force applied at the angle on the XZ plane.
-	 * @param angle
-	 * @param force
-	 * @return
-	 */
-	public Room addXZForce(double angle, double force) {
-		double xForce = Math.sin(angle) * force;
-        double zForce = Math.cos(angle) * force;
-        
-        Room room = new Room(this);
-        room.setCoords(room.getCoords().add((int)xForce, 0, (int)zForce));
-        return room;
-	}
-	
-	/**
-	 * Comparator to sort by Id
-	 */
-	public static Comparator<Room> idComparator = new Comparator<Room>() {
-		@Override
-		public int compare(Room p1, Room p2) {
-			if (p1.getId() > p2.getId()) {
-				// greater than
-				return 1;
-			}
-			else {
-				// less than
-				return -1;
-			}
-		}
-	};
-	
-	/**
-	 * Comparator to sort plans by set weight
-	 */
-	public static Comparator<Room> distanceComparator = new Comparator<Room>() {
-		@Override
-		public int compare(Room p1, Room p2) {
-			if (p1.getDistance() > p2.getDistance()) {
-				// greater than
-				return 1;
-			}
-			else {
-				// less than
-				return -1;
-			}
-		}
-	};
+//	/**
+//	 * Comparator to sort plans by set weight
+//	 */
+//	public static Comparator<Room> distanceComparator = new Comparator<Room>() {
+//		@Override
+//		public int compare(Room p1, Room p2) {
+//			if (p1.getDistance() > p2.getDistance()) {
+//				// greater than
+//				return 1;
+//			}
+//			else {
+//				// less than
+//				return -1;
+//			}
+//		}
+//	};
 		
 	/**
 	 * @return the NAME
 	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -314,21 +330,24 @@ public class Room {
 	/**
 	 * @param NAME the NAME to set
 	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 	
-	/**
-	 * @return the coords
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#getCoords()
 	 */
+	@Override
 	public ICoords getCoords() {
 		return coords;
 	}
 
-	/**
-	 * @param coords the coords to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#setCoords(com.someguyssoftware.gottschcore.positional.ICoords)
 	 */
-	public Room setCoords(ICoords coords) {
+	@Override
+	public IRoom setCoords(ICoords coords) {
 		this.coords = coords;
 		return this;
 	}
@@ -347,46 +366,52 @@ public class Room {
 //		this.center = center;
 //	}
 
-	/**
-	 * @return the depth
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#getDepth()
 	 */
+	@Override
 	public int getDepth() {
 		return depth;
 	}
 
-	/**
-	 * @param depth the depth to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#setDepth(int)
 	 */
-	public Room setDepth(int depth) {
+	@Override
+	public IRoom setDepth(int depth) {
 		this.depth = depth;
 		return this;
 	}
 
-	/**
-	 * @return the width
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#getWidth()
 	 */
+	@Override
 	public int getWidth() {
 		return width;
 	}
 
-	/**
-	 * @param width the width to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#setWidth(int)
 	 */
-	public Room setWidth(int width) {
+	@Override
+	public IRoom setWidth(int width) {
 		this.width = width;
 		return this;
 	}
 
-	/**
-	 * @return the height
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#getHeight()
 	 */
+	@Override
 	public int getHeight() {
 		return height;
 	}
 
-	/**
-	 * @param height the height to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#setHeight(int)
 	 */
+	@Override
 	public Room setHeight(int height) {
 		this.height = height;
 		return this;
@@ -395,6 +420,7 @@ public class Room {
 	/**
 	 * @return the anchor
 	 */
+	@Override
 	public boolean isAnchor() {
 		return anchor;
 	}
@@ -402,29 +428,31 @@ public class Room {
 	/**
 	 * @param anchor the anchor to set
 	 */
+	@Override
 	public Room setAnchor(boolean anchor) {
 		this.anchor = anchor;
 		return this;
 	}
 
-	/**
-	 * @return the distance
-	 */
-	public double getDistance() {
-		return distance;
-	}
-
-	/**
-	 * @param distance the distance to set
-	 */
-	public Room setDistance(double distance) {
-		this.distance = distance;
-		return this;
-	}
+//	/**
+//	 * @return the distance
+//	 */
+//	public double getDistance() {
+//		return distance;
+//	}
+//
+//	/**
+//	 * @param distance the distance to set
+//	 */
+//	public IRoom setDistance(double distance) {
+//		this.distance = distance;
+//		return this;
+//	}
 
 	/**
 	 * @return the id
 	 */
+	@Override
 	public int getId() {
 		return id;
 	}
@@ -432,6 +460,7 @@ public class Room {
 	/**
 	 * @param id the id to set
 	 */
+	@Override
 	public void setId(int id) {
 		this.id = id;
 	}
@@ -439,6 +468,7 @@ public class Room {
 	/**
 	 * @return the reject
 	 */
+	@Override
 	public boolean isReject() {
 		return reject;
 	}
@@ -446,6 +476,7 @@ public class Room {
 	/**
 	 * @param reject the reject to set
 	 */
+	@Override
 	public void setReject(boolean reject) {
 		this.reject = reject;
 	}
@@ -487,6 +518,7 @@ public class Room {
 	/**
 	 * @return the start
 	 */
+	@Override
 	public boolean isStart() {
 		return start;
 	}
@@ -494,6 +526,7 @@ public class Room {
 	/**
 	 * @param start the start to set
 	 */
+	@Override
 	public Room setStart(boolean start) {
 		this.start = start;
 		return this;
@@ -502,6 +535,7 @@ public class Room {
 	/**
 	 * @return the end
 	 */
+	@Override
 	public boolean isEnd() {
 		return end;
 	}
@@ -509,6 +543,7 @@ public class Room {
 	/**
 	 * @param end the end to set
 	 */
+	@Override
 	public Room setEnd(boolean end) {
 		this.end = end;
 		return this;
@@ -517,6 +552,7 @@ public class Room {
 	/**
 	 * @return the type
 	 */
+	@Override
 	public Type getType() {
 		return type;
 	}
@@ -524,6 +560,7 @@ public class Room {
 	/**
 	 * @param type the type to set
 	 */
+	@Override
 	public Room setType(Type type) {
 		this.type = type;
 		return this;
@@ -532,6 +569,7 @@ public class Room {
 	/**
 	 * @return the degrees
 	 */
+	@Override
 	public int getDegrees() {
 		return degrees;
 	}
@@ -539,6 +577,7 @@ public class Room {
 	/**
 	 * @param degrees the degrees to set
 	 */
+	@Override
 	public Room setDegrees(int degrees) {
 		this.degrees = degrees;
 		return this;
@@ -547,6 +586,7 @@ public class Room {
 	/**
 	 * @return the obstacle
 	 */
+	@Override
 	public boolean isObstacle() {
 		return obstacle;
 	}
@@ -554,34 +594,34 @@ public class Room {
 	/**
 	 * @param obstacle the obstacle to set
 	 */
+	@Override
 	public void setObstacle(boolean obstacle) {
 		this.obstacle = obstacle;
 	}
 
-	/**
-	 * @return the direction
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#getDirection()
 	 */
+	@Override
 	public Direction getDirection() {
 		return direction;
 	}
 
-	/**
-	 * @param direction the direction to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#setDirection(com.someguyssoftware.gottschcore.enums.Direction)
 	 */
+	@Override
 	public Room setDirection(Direction direction) {
 		this.direction = direction;
 		return this;
 	}
-
-
-	
-
 	
 	/**
 	 * 
 	 * @return
 	 */
-	public List<Door> getDoors() {
+	@Override
+	public List<IDoor> getDoors() {
 		if (doors == null) doors = new ArrayList<>(5);
 		return doors;
 	}
@@ -590,21 +630,22 @@ public class Room {
 	 * 
 	 * @param doors
 	 */
-	public void setDoors(List<Door> doors) {
+	@Override
+	public void setDoors(List<IDoor> doors) {
 		this.doors = doors;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	public ICoords getBottomCenter() {
-		int x = this.getCoords().getX()  + ((this.getWidth()-1) / 2);
-		int y = this.getCoords().getY();
-		int z = this.getCoords().getZ()  + ((this.getDepth()-1) / 2);
-		ICoords coords = new Coords(x, y, z);
-		return coords;	
-	}
+//	/* (non-Javadoc)
+//	 * @see com.someguyssoftware.dungeonsengine.model.IRoom#getBottomCenter()
+//	 */
+//	@Override
+//	public ICoords getBottomCenter() {
+//		int x = this.getCoords().getX()  + ((this.getWidth()-1) / 2);
+//		int y = this.getCoords().getY();
+//		int z = this.getCoords().getZ()  + ((this.getDepth()-1) / 2);
+//		ICoords coords = new Coords(x, y, z);
+//		return coords;	
+//	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -612,7 +653,7 @@ public class Room {
 	@Override
 	public String toString() {
 		return "Room [id=" + id + ", name=" + name + ", type=" + type + ", coords=" + coords + ", depth=" + depth + ", width=" + width + ", height=" + height + ", direction=" + direction
-				+ ", distance=" + distance + ", anchor=" + anchor + ", obstacle=" + obstacle + ", reject=" + reject + ", start=" + start + ", end=" + end + ", degrees=" + degrees + ", doors=" + doors
-				+ ", rendered=" + rendered + "]";
+				+ ", anchor=" + anchor + ", obstacle=" + obstacle + ", reject=" + reject + ", start=" + start + ", end=" + end + ", degrees=" + degrees + ", doors=" + doors
+				+ "]";
 	}
 }

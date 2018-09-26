@@ -13,10 +13,12 @@ import javax.swing.JPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.someguyssoftware.dungeonsengine.builder.IRoomBuilder;
 import com.someguyssoftware.dungeonsengine.builder.LevelBuilder;
 import com.someguyssoftware.dungeonsengine.builder.RoomBuilder;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
-import com.someguyssoftware.dungeonsengine.model.Level;
+import com.someguyssoftware.dungeonsengine.model.ILevel;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.gottschcore.Quantity;
 import com.someguyssoftware.gottschcore.enums.Direction;
@@ -80,20 +82,20 @@ public class LevelVisualizer {
 		int w = (int) Math.abs(roomField.maxX - roomField.minX);
 		int d = (int) Math.abs(roomField.maxZ - roomField.minZ);
 		AxisAlignedBB endField = new AxisAlignedBB(
-				new BlockPos(Math.max(roomField.minX-(w/2), levelField.minX), 0,
-						Math.max(roomField.minZ-(d/2), levelField.minZ)),
-				new BlockPos(Math.min(roomField.maxX+(w/2), levelField.maxX), 0, 
-						Math.min(roomField.maxZ+(d/2), levelField.maxZ)));
+				new BlockPos(Math.max(roomField.minX-(w/3), levelField.minX), 0,
+						Math.max(roomField.minZ-(d/3), levelField.minZ)),
+				new BlockPos(Math.min(roomField.maxX+(w/3), levelField.maxX), 0, 
+						Math.min(roomField.maxZ+(d/3), levelField.maxZ)));
 		
 		// test - add an extra planned room
-		List<Room> plannedRooms = new ArrayList<>();
+		List<IRoom> plannedRooms = new ArrayList<>();
 		
 		RoomBuilder roomBuilder = new RoomBuilder(random, roomField, startPoint, config);		
-		RoomBuilder endRoomBuilder = new RoomBuilder(random, endField, startPoint, config);	
+		IRoomBuilder endRoomBuilder = new RoomBuilder(random, endField, startPoint, config);	
 		LevelBuilder builder = new LevelBuilder(null, random); // TODO require room builder in constructor
 		builder.setRoomBuilder(roomBuilder);
 		
-		Room startRoom = roomBuilder.buildStartRoom();
+		IRoom startRoom = roomBuilder.buildStartRoom();
 //		Room extraRoom = new Room().setDegrees(3)
 //				.setDepth(10).setWidth(10).setAnchor(true)
 //				.setCoords(new Coords(startRoom.getCoords().getX(), 0, startRoom.getCoords().getZ() - 20))
@@ -102,9 +104,9 @@ public class LevelVisualizer {
 		
 		plannedRooms.add(startRoom);
 //		plannedRooms.add(extraRoom);
-		Room endRoom =endRoomBuilder.buildEndRoom(plannedRooms);//.setAnchor(false);
+		IRoom endRoom =endRoomBuilder.buildEndRoom(plannedRooms);//.setAnchor(false);
 
-		Level level = builder
+		ILevel level = builder
 			.withStartPoint(startPoint)		// TODO optional - get from room builder
 			.withConfig(config)						// TODO optional - get from room builder
 			.withField(levelField)					// TODO optional - get from room builder

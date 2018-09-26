@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
-import com.someguyssoftware.dungeonsengine.graph.mst.Edge;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 
 import net.minecraft.util.math.AxisAlignedBB;
@@ -19,17 +18,14 @@ import net.minecraft.util.math.BlockPos;
  * @since 1.0.0
  *
  */
-public class Level {
+public class Level implements ILevel {
 	private int id;
 	private String name;
 	private ICoords spawnPoint;
 	private ICoords startPoint;
-	private Room startRoom;
-	private Room endRoom;
-	private List<Room> rooms;
-	
-	@Deprecated private int depth;
-	@Deprecated private int width;
+	private IRoom startRoom;
+	private IRoom endRoom;
+	private List<IRoom> rooms;
 	
 	private AxisAlignedBB field;
 	// TODO maybe create a VisualLevel extends Level that contains the transient data and is only set if a flag is set
@@ -57,51 +53,57 @@ public class Level {
 		super();
 	}
 
-	/**
-	 * @return the startRoom
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getStartRoom()
 	 */
-	public Room getStartRoom() {
+	@Override
+	public IRoom getStartRoom() {
 		return startRoom;
 	}
 
 
-	/**
-	 * @param startRoom the startRoom to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setStartRoom(com.someguyssoftware.dungeonsengine.model.IRoom)
 	 */
-	public void setStartRoom(Room startRoom) {
+	@Override
+	public void setStartRoom(IRoom startRoom) {
 		this.startRoom = startRoom;
 	}
 
 
-	/**
-	 * @return the endRoom
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getEndRoom()
 	 */
-	public Room getEndRoom() {
+	@Override
+	public IRoom getEndRoom() {
 		return endRoom;
 	}
 
 
-	/**
-	 * @param endRoom the endRoom to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setEndRoom(com.someguyssoftware.dungeonsengine.model.IRoom)
 	 */
-	public void setEndRoom(Room endRoom) {
+	@Override
+	public void setEndRoom(IRoom endRoom) {
 		this.endRoom = endRoom;
 	}
 
 
-	/**
-	 * @return the rooms
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getRooms()
 	 */
-	public List<Room> getRooms() {
+	@Override
+	public List<IRoom> getRooms() {
 		if (this.rooms == null) this.rooms = new ArrayList<>();
 		return rooms;
 	}
 
 
-	/**
-	 * @param rooms the rooms to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setRooms(java.util.List)
 	 */
-	public void setRooms(List<Room> rooms) {
+	@Override
+	public void setRooms(List<IRoom> rooms) {
 		this.rooms = rooms;
 	}
 
@@ -111,17 +113,17 @@ public class Level {
 	 * @param endRoom
 	 * @param rooms
 	 */
-	public Level(Room startRoom, Room endRoom, List<Room> rooms) {
+	public Level(IRoom startRoom, IRoom endRoom, List<IRoom> rooms) {
 		super();
 		this.startRoom = startRoom;
 		this.endRoom = endRoom;
 		this.rooms = rooms;
 	}
 
-	/**
-	 * 
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getBoundingBox()
 	 */
+	@Override
 	public AxisAlignedBB getBoundingBox() {
 		BlockPos bp1 = getStartPoint().toPos();
 		BlockPos bp2 = getStartPoint().add(getWidth(), getStartPoint().getY()+1, getDepth()).toPos(); // TODO update to actual height
@@ -129,10 +131,10 @@ public class Level {
 		return bb;
 	}
 	
-	/**
-	 * Creates a bounding box by the XZ dimensions with a height (Y) of 1
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getXZBoundingBox()
 	 */
+	@Override
 	public AxisAlignedBB getXZBoundingBox() {
 //		BlockPos bp1 = new BlockPos(getStartPoint().getX(), 0, getStartPoint().getZ());
 //		BlockPos bp2 = getStartPoint().add(getWidth(), 1, getDepth()).toPos();
@@ -141,30 +143,34 @@ public class Level {
 		return this.getField();
 	}
 	
-	/**
-	 * @return the id
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getId()
 	 */
+	@Override
 	public int getId() {
 		return id;
 	}
 
-	/**
-	 * @param id the id to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setId(int)
 	 */
+	@Override
 	public void setId(int id) {
 		this.id = id;
 	}
 
-	/**
-	 * @return the NAME
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getName()
 	 */
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @param NAME the NAME to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setName(java.lang.String)
 	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -197,121 +203,138 @@ public class Level {
 //		this.paths = paths;
 //	}
 
-	/**
-	 * @return the minX
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getMinX()
 	 */
+	@Override
 	public int getMinX() {
 		return minX;
 	}
 
-	/**
-	 * @param minX the minX to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setMinX(int)
 	 */
+	@Override
 	public void setMinX(int minX) {
 		this.minX = minX;
 	}
 
-	/**
-	 * @return the maxX
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getMaxX()
 	 */
+	@Override
 	public int getMaxX() {
 		return maxX;
 	}
 
-	/**
-	 * @param maxX the maxX to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setMaxX(int)
 	 */
+	@Override
 	public void setMaxX(int maxX) {
 		this.maxX = maxX;
 	}
 
-	/**
-	 * @return the minY
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getMinY()
 	 */
+	@Override
 	public int getMinY() {
 		return minY;
 	}
 
-	/**
-	 * @param minY the minY to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setMinY(int)
 	 */
+	@Override
 	public void setMinY(int minY) {
 		this.minY = minY;
 	}
 
-	/**
-	 * @return the maxY
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getMaxY()
 	 */
+	@Override
 	public int getMaxY() {
 		return maxY;
 	}
 
-	/**
-	 * @param maxY the maxY to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setMaxY(int)
 	 */
+	@Override
 	public void setMaxY(int maxY) {
 		this.maxY = maxY;
 	}
 
-	/**
-	 * @return the minZ
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getMinZ()
 	 */
+	@Override
 	public int getMinZ() {
 		return minZ;
 	}
 
-	/**
-	 * @param minZ the minZ to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setMinZ(int)
 	 */
+	@Override
 	public void setMinZ(int minZ) {
 		this.minZ = minZ;
 	}
 
-	/**
-	 * @return the maxZ
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getMaxZ()
 	 */
+	@Override
 	public int getMaxZ() {
 		return maxZ;
 	}
 
-	/**
-	 * @param maxZ the maxZ to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setMaxZ(int)
 	 */
+	@Override
 	public void setMaxZ(int maxZ) {
 		this.maxZ = maxZ;
 	}
 
-	/**
-	 * @return the startPoint
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getStartPoint()
 	 */
+	@Override
 	public ICoords getStartPoint() {
 		return startPoint;
 	}
 
-	/**
-	 * @param startPoint the startPoint to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setStartPoint(com.someguyssoftware.gottschcore.positional.ICoords)
 	 */
+	@Override
 	public void setStartPoint(ICoords startPoint) {
 		this.startPoint = startPoint;
 	}
 
-	/**
-	 * @return the config
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getConfig()
 	 */
+	@Override
 	public LevelConfig getConfig() {
 		return config;
 	}
 
-	/**
-	 * @param config the config to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setConfig(com.someguyssoftware.dungeonsengine.config.LevelConfig)
 	 */
+	@Override
 	public void setConfig(LevelConfig config) {
 		this.config = config;
 	}
 
-	/**
-	 * @return the shafts
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getShafts()
 	 */
+	@Override
 	public List<Shaft> getShafts() {
 		if (shafts == null) {
 			this.shafts = new ArrayList<>();
@@ -319,13 +342,18 @@ public class Level {
 		return shafts;
 	}
 
-	/**
-	 * @param shafts the shafts to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setShafts(java.util.List)
 	 */
+	@Override
 	public void setShafts(List<Shaft> shafts) {
 		this.shafts = shafts;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getHallways()
+	 */
+	@Override
 	public List<Hallway> getHallways() {
 		if (hallways == null) {
 			this.hallways = new ArrayList<>();
@@ -333,64 +361,90 @@ public class Level {
 		return hallways;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setHallways(java.util.List)
+	 */
+	@Override
 	public void setHallways(List<Hallway> hallways) {
 		this.hallways = hallways;
 	}
 
-	/**
-	 * @return the spawnPoint
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getSpawnPoint()
 	 */
+	@Override
 	public ICoords getSpawnPoint() {
 		return spawnPoint;
 	}
 
-	/**
-	 * @param spawnPoint the spawnPoint to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setSpawnPoint(com.someguyssoftware.gottschcore.positional.ICoords)
 	 */
+	@Override
 	public void setSpawnPoint(ICoords spawnPoint) {
 		this.spawnPoint = spawnPoint;
 	}
 
-	/**
-	 * @return the length
+//	/**
+//	 * @return the length
+//	 */
+//	@Deprecated
+//	public int getDepth() {
+//		return depth;
+//	}
+	
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getDepth()
 	 */
-	@Deprecated
+	@Override
 	public int getDepth() {
-		return depth;
+		return (int) (getField().maxZ - getField().minZ);
 	}
+	
+//
+//	/**
+//	 * @param length the length to set
+//	 */
+//	public void setDepth(int length) {
+//		this.depth = length;
+//	}
 
-	/**
-	 * @param length the length to set
+//	/**
+//	 * @return the width
+//	 */
+//	@Deprecated
+//	public int getWidth() {
+//		return width;
+//	}
+	
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getWidth()
 	 */
-	public void setDepth(int length) {
-		this.depth = length;
-	}
-
-	/**
-	 * @return the width
-	 */
-	@Deprecated
+	@Override
 	public int getWidth() {
-		return width;
+		return (int) (getField().maxX - getField().minX);
 	}
+	
+//
+//	/**
+//	 * @param width the width to set
+//	 */
+//	public void setWidth(int width) {
+//		this.width = width;
+//	}
 
-	/**
-	 * @param width the width to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getField()
 	 */
-	public void setWidth(int width) {
-		this.width = width;
-	}
-
-	/**
-	 * @return the field
-	 */
+	@Override
 	public AxisAlignedBB getField() {
 		return field;
 	}
 
-	/**
-	 * @param field the field to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setField(net.minecraft.util.math.AxisAlignedBB)
 	 */
+	@Override
 	public void setField(AxisAlignedBB field) {
 		this.field = field;
 	}
@@ -401,7 +455,7 @@ public class Level {
 	@Override
 	public String toString() {
 		return "Level [id=" + id + ", name=" + name + ", spawnPoint=" + spawnPoint + ", startPoint=" + startPoint + ", startRoom=" + startRoom + ", endRoom=" + endRoom + ", rooms=" + rooms
-				+ ", depth=" + depth + ", width=" + width + ", field=" + field + ", hallways=" + hallways + ", shafts=" + shafts + ", minX=" + minX + ", maxX=" + maxX + ", minY=" + minY + ", maxY="
+				+ ", depth=" + getDepth() + ", width=" + getWidth() + ", field=" + field + ", hallways=" + hallways + ", shafts=" + shafts + ", minX=" + minX + ", maxX=" + maxX + ", minY=" + minY + ", maxY="
 				+ maxY + ", minZ=" + minZ + ", maxZ=" + maxZ + ", config=" + config + "]";
 	}
 	

@@ -7,8 +7,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.someguyssoftware.dungeonsengine.model.DesignElement;
 import com.someguyssoftware.dungeonsengine.model.IArchitecturalElement;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.Layout;
-import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 
 /**
@@ -17,7 +17,7 @@ import com.someguyssoftware.gottschcore.positional.ICoords;
  */
 public class DecoratedRoom {
 
-	private Room room;
+	private IRoom room;
 	
 	
 	
@@ -50,7 +50,7 @@ public class DecoratedRoom {
 	/**
 	 * 
 	 */
-	public DecoratedRoom(Room room) {
+	public DecoratedRoom(IRoom room) {
 		this.room = room;
 	}
 
@@ -66,7 +66,7 @@ public class DecoratedRoom {
 	/**
 	 * @param layout the layout to set
 	 */
-	public Room setLayout(Layout layout) {
+	public IRoom setLayout(Layout layout) {
 		this.layout = layout;
 		return this;
 	}

@@ -6,6 +6,7 @@ package com.someguyssoftware.dungeonsengine.model;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.someguyssoftware.dungeonsengine.config.DungeonConfig;
 import com.someguyssoftware.dungeonsengine.graph.Wayline;
 
 /**
@@ -14,7 +15,7 @@ import com.someguyssoftware.dungeonsengine.graph.Wayline;
  */
 public class Dungeon {
 
-	private Room entrance;
+	private IRoom entrance;
 	private List<Level> levels;
 	// TODO shafts needs to be indexed by levelIndex
 	private List<Wayline> shafts;
@@ -143,14 +144,14 @@ public class Dungeon {
 	/**
 	 * @return the entrance
 	 */
-	public Room getEntrance() {
+	public IRoom getEntrance() {
 		return entrance;
 	}
 
 	/**
 	 * @param entrance the entrance to set
 	 */
-	public void setEntrance(Room entrance) {
+	public void setEntrance(IRoom entrance) {
 		this.entrance = entrance;
 	}
 

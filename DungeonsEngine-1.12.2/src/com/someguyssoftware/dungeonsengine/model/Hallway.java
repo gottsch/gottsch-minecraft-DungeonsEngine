@@ -12,13 +12,13 @@ import com.someguyssoftware.gottschcore.enums.Alignment;
  * @version 2.0
  * @since 1.0.0
  */
-public class Hallway extends Room {
+public class Hallway extends Room implements IHallway {
 	Alignment alignment;
 
 	/**
 	 * @since 2.0
 	 */
-	Hallway hallway;
+	IHallway hallway;
 
 	/**
 	 * 
@@ -28,24 +28,34 @@ public class Hallway extends Room {
 		setDoors(new ArrayList<>(2));
 	}
 	
-	public Hallway getHallway() {
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IHallway#getHallway()
+	 */
+	@Override
+	public IHallway getHallway() {
 		return hallway;
 	}
 
-	public void setHallway(Hallway hallway) {
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IHallway#setHallway(com.someguyssoftware.dungeonsengine.model.IHallway)
+	 */
+	@Override
+	public void setHallway(IHallway hallway) {
 		this.hallway = hallway;
 	}
 	
-	/**
-	 * @return the alignment
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IHallway#getAlignment()
 	 */
+	@Override
 	public Alignment getAlignment() {
 		return alignment;
 	}
 
-	/**
-	 * @param alignment the alignment to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IHallway#setAlignment(com.someguyssoftware.gottschcore.enums.Alignment)
 	 */
+	@Override
 	public void setAlignment(Alignment alignment) {
 		this.alignment = alignment;
 	}

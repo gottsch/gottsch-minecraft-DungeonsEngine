@@ -9,7 +9,7 @@ package com.someguyssoftware.dungeonsengine.model;
  *
  */
 public class Shaft extends Room {
-	Room parent;
+	IRoom parent;
 
 	public Shaft() {
 		super();
@@ -18,14 +18,14 @@ public class Shaft extends Room {
 	/**
 	 * @return the parent
 	 */
-	public Room getParent() {
+	public IRoom getParent() {
 		return parent;
 	}
 
 	/**
 	 * @param parent the parent to set
 	 */
-	public void setParent(Room parent) {
+	public void setParent(IRoom parent) {
 		this.parent = parent;
 	}
 }

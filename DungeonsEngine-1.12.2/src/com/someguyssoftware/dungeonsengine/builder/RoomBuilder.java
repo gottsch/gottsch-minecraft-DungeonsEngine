@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.dungeonsengine.model.Room.Type;
 import com.someguyssoftware.gottschcore.Quantity;
@@ -24,9 +25,9 @@ import net.minecraft.util.math.AxisAlignedBB;
  * @author Mark Gottschling on Sep 22, 2018
  *
  */
-public class RoomBuilder {
+public class RoomBuilder implements IRoomBuilder {
 	public static Logger logger = LogManager.getLogger("DungeonsEngine");
-	public static final Room EMPTY_ROOM = new Room();
+	public static final IRoom EMPTY_ROOM = new Room();
 	
 	private LevelConfig config;
 	private Random random;
@@ -93,11 +94,12 @@ public class RoomBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room randomizeDimensions(Room roomIn) {
-		Room room = new Room(roomIn);
-		room.setWidth(Math.max(Room.MIN_WIDTH, RandomHelper.randomInt(getRandom(), getConfig().getWidth().getMinInt(), getConfig().getWidth().getMaxInt())));
-		room.setDepth(Math.max(Room.MIN_DEPTH, RandomHelper.randomInt(getRandom(), getConfig().getDepth().getMinInt(), getConfig().getDepth().getMaxInt())));
-		room.setHeight(Math.max(Room.MIN_HEIGHT, RandomHelper.randomInt(getRandom(), getConfig().getHeight().getMinInt(), getConfig().getHeight().getMaxInt())));		
+	protected IRoom randomizeDimensions(IRoom roomIn) {
+//		IRoom room = new Room(roomIn);
+		IRoom room = roomIn.copy();
+		room.setWidth(Math.max(IRoom.MIN_WIDTH, RandomHelper.randomInt(getRandom(), getConfig().getWidth().getMinInt(), getConfig().getWidth().getMaxInt())));
+		room.setDepth(Math.max(IRoom.MIN_DEPTH, RandomHelper.randomInt(getRandom(), getConfig().getDepth().getMinInt(), getConfig().getDepth().getMaxInt())));
+		room.setHeight(Math.max(IRoom.MIN_HEIGHT, RandomHelper.randomInt(getRandom(), getConfig().getHeight().getMinInt(), getConfig().getHeight().getMaxInt())));		
 		return room;
 	}
 
@@ -117,8 +119,9 @@ public class RoomBuilder {
 	 * @param roomIn
 	 * @return
 	 */
-	protected Room randomizeRoomCoords(Room roomIn) {
-		Room room = new Room(roomIn);
+	protected IRoom randomizeRoomCoords(IRoom roomIn) {
+//		Room room = new Room(roomIn);
+		IRoom room = roomIn.copy();
 		// generate a ranom set of coords
 		ICoords c = randomizeCoords();
 		// center room using the random coords
@@ -131,31 +134,35 @@ public class RoomBuilder {
 	 * @param roomIn
 	 * @return
 	 */
-	protected Room randomizeRoom(Room roomIn) {
+	protected IRoom randomizeRoom(IRoom roomIn) {
 		// randomize dimensions
-		Room room = randomizeDimensions(roomIn);
+		IRoom room = randomizeDimensions(roomIn);
 
 		// randomize the rooms
 		room = randomizeRoomCoords(room);
 		// calculate distance squared
-		room.setDistance(room.getCenter().getDistanceSq(getStartPoint()));
+//		room.setDistance(room.getCenter().getDistanceSq(getStartPoint()));
+		
 		// set the degrees (number of edges)
-		room.setDegrees(RandomHelper.randomInt(random, config.getDegrees().getMinInt(), config.getDegrees().getMaxInt()));
+		room.setDegrees(RandomHelper.randomInt(random, 
+				getConfig().getDegrees().getMinInt(), 
+				getConfig().getDegrees().getMaxInt()));
+		
 		// randomize a direction
 		room.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
 
 		return room;
 	}
 	
-	/**
-	 * 
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.builder.IRoomBuilder#buildStartRoom()
 	 */
-	public Room buildStartRoom() {
+	@Override
+	public IRoom buildStartRoom() {
 		/*
 		 * the start of the level
 		 */
-		Room startRoom = new Room().setStart(true).setAnchor(true).setType(Type.LADDER);
+		IRoom startRoom = new Room().setStart(true).setAnchor(true).setType(Type.LADDER);
 		startRoom = randomizeDimensions(startRoom);
 		// ensure min dimensions are met for start room
 		startRoom.setWidth(Math.max(7, startRoom.getWidth()));
@@ -166,23 +173,29 @@ public class RoomBuilder {
 		
 		// set the starting room coords to be in the middle of the start point
 		startRoom.setCoords(
-				new Coords(startPoint.getX()-(startRoom.getWidth()/2),
-						startPoint.getY(),
-						startPoint.getZ()-(startRoom.getDepth()/2)));
+				new Coords(getStartPoint().getX()-(startRoom.getWidth()/2),
+						getStartPoint().getY(),
+						getStartPoint().getZ()-(startRoom.getDepth()/2)));
+		
 		//startRoom.setDistance(startRoom.getCoords().getDistanceSq(startPoint));
-		startRoom.setDistance(0.0);
+//		startRoom.setDistance(0.0);
+		
 		// randomize a direction
 		startRoom.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
 		return startRoom;
 	}
 	
-	public Room buildEndRoom(List<Room> plannedRooms) {
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.builder.IRoomBuilder#buildEndRoom(java.util.List)
+	 */
+	@Override
+	public IRoom buildEndRoom(List<IRoom> plannedRooms) {
 		/*
 		 * the end room of the level.
 		 */
 	
 		// build the end room
-		Room endRoom  = buildPlannedRoom(plannedRooms).setEnd(true).setAnchor(true).setType(Type.LADDER);
+		IRoom endRoom  = buildRoom(plannedRooms).setEnd(true).setAnchor(true).setType(Type.LADDER);
 		// ensure min dimensions are met for start room
 		endRoom.setWidth(Math.max(7, endRoom.getWidth()));
 		endRoom.setDepth(Math.max(7,  endRoom.getDepth()));
@@ -193,13 +206,12 @@ public class RoomBuilder {
 		return endRoom;
 	}
 	
-	/**
-	 * 
-	 * @param plannedRooms
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.builder.IRoomBuilder#buildRoom(java.util.List)
 	 */
-	protected Room buildPlannedRoom(List<Room> plannedRooms) {
-		Room plannedRoom = new Room();		
+	@Override
+	public IRoom buildRoom(List<IRoom> plannedRooms) {
+		IRoom plannedRoom = new Room();		
 		/* 
 		 * check to make sure planned rooms don't intersect.
 		 * test up to 10 times for a successful position
@@ -215,7 +227,7 @@ public class RoomBuilder {
 				logger.warn("Unable to position Planned Room that meets positional criteria.");
 				return EMPTY_ROOM;
 			}
-			for (Room room : plannedRooms) {
+			for (IRoom room : plannedRooms) {
 				if (room.getXZBoundingBox().intersects(plannedRoom.getXZBoundingBox())) {
 					logger.debug("New Planned room intersects with planned list room.");
 					continue checkingRooms;

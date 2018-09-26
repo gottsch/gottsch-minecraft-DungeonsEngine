@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.someguyssoftware.dungeonsengine.comparator.RoomDistanceComparator;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.graph.Wayline;
 import com.someguyssoftware.dungeonsengine.graph.Waypoint;
@@ -28,6 +29,9 @@ import com.someguyssoftware.dungeonsengine.graph.mst.EdgeWeightedGraph;
 import com.someguyssoftware.dungeonsengine.graph.mst.LazyPrimMST;
 import com.someguyssoftware.dungeonsengine.model.Door;
 import com.someguyssoftware.dungeonsengine.model.Hallway;
+import com.someguyssoftware.dungeonsengine.model.IDoor;
+import com.someguyssoftware.dungeonsengine.model.ILevel;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.Level;
 import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.dungeonsengine.model.Room.Type;
@@ -82,14 +86,14 @@ public class LevelBuilder {
 	 */
 	private static final ICoords FORCE_SOURCE_COORDS = new Coords(0, 0, 0);
 
-	public static final Room EMPTY_ROOM = new Room();
+	public static final IRoom EMPTY_ROOM = new Room();
 	
 	/*
 	 * empty level
 	 */
-	public static final Level EMPTY_LEVEL = new Level();
+	public static final ILevel EMPTY_LEVEL = new Level();
 
-	public static final List<Room> EMPTY_ROOMS = new ArrayList<>();
+	public static final List<IRoom> EMPTY_ROOMS = new ArrayList<>();
 
 	public static final List<Wayline> EMPTY_WAYLINES = new ArrayList<>();
 
@@ -102,19 +106,19 @@ public class LevelBuilder {
 	/*
 	 * rooms that are randomly generated
 	 */
-	List<Room> spawned = null;
+	List<IRoom> spawned = null;
 
 	/*
 	 * special rooms which are designed as <em>fixed position</em>. ex. ladder rooms, treasure rooms, boss rooms.
 	 * these rooms' positions will typically be pre-determined in a location that meets all criteria.
 	 * these rooms <em>will</em> be included in the resultant level.
 	 */
-	List<Room> anchors = new ArrayList<>();
+	List<IRoom> anchors = new ArrayList<>();
 
 	/*
 	 * resultant list of buffered/spaced rooms on a single level.
 	 */
-	List<Room> rooms = null;
+	List<IRoom> rooms = null;
 
 	/*
 	 * resultant list of edges from triangulation of rooms.
@@ -142,7 +146,7 @@ public class LevelBuilder {
 	 */
 	private ICoords startPoint;
 	
-	private List<Room> plannedRooms;
+	private List<IRoom> plannedRooms;
 	
 	/*
 	 * the bounding box in which the entire level must reside
@@ -211,19 +215,19 @@ public class LevelBuilder {
 		return this;
 	}
 	
-	public LevelBuilder withStartRoom(Room room) {
+	public LevelBuilder withStartRoom(IRoom room) {
 		// TODO ensure that room has all the start room properties set
 		this.plannedRooms.add(room);
 		return this;
 	}
 	
-	public LevelBuilder withEndRoom(Room room) {
+	public LevelBuilder withEndRoom(IRoom room) {
 		// TODO ensure that room has all the start room properties set
 		this.plannedRooms.add(room);
 		return this;
 	}
 	
-	public LevelBuilder withRoom(Room room) {
+	public LevelBuilder withRoom(IRoom room) {
 		this.plannedRooms.add(room);
 		return this;
 	}
@@ -238,23 +242,23 @@ public class LevelBuilder {
 	 * 
 	 * @return
 	 */
-	public Level build() {
+	public ILevel build() {
 		// TODO do property checks - ensure there is a start room, end room, etc and create if necessary
 		
 		/*
 		 * local handle to the start room
 		 */
-		Room startRoom = null;
+		IRoom startRoom = null;
 		
 		/*
 		 *  local handle to the end room
 		 */
-		Room endRoom = null;
+		IRoom endRoom = null;
 		
 		/*
 		 * return object containing all the rooms that meet build criteria and the locations of the special rooms.
 		 */
-		Level level = new Level();
+		ILevel level = new Level();
 		
 		// TODO ensure that the field exists
 		// TODO ensure that start point falls within field
@@ -266,7 +270,7 @@ public class LevelBuilder {
 		this.spawned = spawnRooms();
 
 		// process all predefined rooms and categorize
-		for (Room room : this.plannedRooms) {
+		for (IRoom room : this.plannedRooms) {
 			if (room.isStart() && startRoom == null) startRoom = room;
 			else if (room.isEnd() && endRoom == null) endRoom = room;
 			if (room.isAnchor())
@@ -276,8 +280,10 @@ public class LevelBuilder {
 		}
 		
 		// sort working array based on distance
-		Collections.sort(spawned, Room.distanceComparator);
+//		Collections.sort(spawned, Room.distanceComparator);
+		Collections.sort(spawned, new RoomDistanceComparator(startPoint));
 		
+		// TODO swap with strategy pattern here. ie room = getDistanceBufferingStrat().apply(...)
 		/*
 		 *  move apart any intersecting rooms (uses anti-grav method). this current method uses anti-grav from the spawn only.
 		 *  TODO refactor to use anti-grav against all rooms where force is lessened the greater the dist the rooms are from each other.
@@ -370,7 +376,7 @@ public class LevelBuilder {
 		}
 		
 		// setup the level
-		Room room = rooms.get(0);
+		IRoom room = rooms.get(0);
 		int minX = room.getMinX();
 		int maxX = room.getMaxX();
 		int minY = room.getMinY();
@@ -398,7 +404,7 @@ public class LevelBuilder {
 		level.setStartRoom(startRoom.copy());
 		level.setEndRoom(endRoom.copy());
 		level.setField(new AxisAlignedBB(getField().minX, getField().minY, getField().minZ, getField().maxX, getField().maxY, getField().maxZ ));
-		level.setRooms(new ArrayList<Room>(rooms));
+		level.setRooms(new ArrayList<IRoom>(rooms));
 		level.setHallways(new ArrayList<Hallway>(hallways));
 		level.setConfig(getConfig().copy());
 		
@@ -418,7 +424,7 @@ public class LevelBuilder {
 	 * @param rooms2
 	 * @return
 	 */
-	private Pair<Integer, Integer> calcMinimumRoomDimensions(List<Room> rooms) {
+	private Pair<Integer, Integer> calcMinimumRoomDimensions(List<IRoom> rooms) {
 		int mx = 0;
 		int mz = 0;
 		for (int i = 0; i < rooms.size(); i++) {
@@ -433,10 +439,10 @@ public class LevelBuilder {
 	 * @param rooms2
 	 * @param minRoomDimensions
 	 */
-	private void offsetRoomCoords(List<Room> rooms2, Pair<Integer, Integer> minRoomDimensions) {
+	private void offsetRoomCoords(List<IRoom> rooms2, Pair<Integer, Integer> minRoomDimensions) {
 		// if dimensions are negative, offset all rooms by positive (Math.abs()) amount +1
 		if (minRoomDimensions.getLeft() < 0 || minRoomDimensions.getRight() < 0) {
-			for (Room room : rooms) {
+			for (IRoom room : rooms) {
 				room.setCoords(room.getCoords().add(Math.abs(minRoomDimensions.getLeft())+1, 0, Math.abs(minRoomDimensions.getRight())+1));
 			}
 		}
@@ -447,10 +453,10 @@ public class LevelBuilder {
 	 * @param rooms2
 	 * @param minRoomDimensions
 	 */
-	private void restoreRoomCoords(List<Room> rooms, Pair<Integer, Integer> dims) {
+	private void restoreRoomCoords(List<IRoom> rooms, Pair<Integer, Integer> dims) {
 		// revert room dimensions and generated waylines back to original values by removing offset.
 		if (dims.getLeft() < 0 || dims.getRight() < 0) {
-			for (Room room : rooms) {
+			for (IRoom room : rooms) {
 				room.setCoords(room.getCoords().add(dims.getLeft()-1, 0, dims.getRight()-1));
 			}
 			for (Wayline line : this.waylines) {
@@ -465,8 +471,8 @@ public class LevelBuilder {
 	 * @param level
 	 * @return
 	 */
-	protected List<Room> spawnRooms() {
-		List<Room> rooms = new ArrayList<>();
+	protected List<IRoom> spawnRooms() {
+		List<IRoom> rooms = new ArrayList<>();
 
 		int levelSize = Math.max(
 				MIN_NUMBER_OF_ROOMS,
@@ -477,7 +483,7 @@ public class LevelBuilder {
 		
 		// generate rooms
 		for (int i = 0; i < levelSize; i++) {
-			Room room = new Room(i);
+			IRoom room = new Room(i);
 			room = roomBuilder.randomizeRoom(room);
 			// add to the working list that contains all the rooms sorted on distance (farthest to closest)
 			rooms.add(room);
@@ -493,7 +499,7 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room randomizeRoom(Room roomIn) {
+	protected IRoom randomizeRoom(IRoom roomIn) {
 		return randomizeRoom(getRandom(), getOrigin(), getField(), roomIn, getConfig());
 	}
 	
@@ -506,14 +512,15 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room randomizeRoom(Random random, ICoords origin, AxisAlignedBB field, Room roomIn, LevelConfig config) {
+	protected IRoom randomizeRoom(Random random, ICoords origin, AxisAlignedBB field, IRoom roomIn, LevelConfig config) {
 		// randomize dimensions
-		Room room = randomizeDimensions(random, roomIn, config);
+		IRoom room = randomizeDimensions(random, roomIn, config);
 
 		// randomize the rooms
 		room = randomizeRoomCoords(random, origin, field, room, config);
 		// calculate distance squared
-		room.setDistance(room.getCenter().getDistanceSq(getStartPoint()));
+//		room.setDistance(room.getCenter().getDistanceSq(getStartPoint()));
+		
 		// set the degrees (number of edges)
 		room.setDegrees(RandomHelper.randomInt(random, config.getDegrees().getMinInt(), config.getDegrees().getMaxInt()));
 		// randomize a direction
@@ -530,7 +537,7 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room randomizeRoomCoords(Room roomIn) {
+	protected IRoom randomizeRoomCoords(IRoom roomIn) {
 		return randomizeRoomCoords(getRandom(), getOrigin(), getField(), roomIn, getConfig());
 	}
 	
@@ -543,8 +550,8 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room randomizeRoomCoords(Random random, ICoords origin, AxisAlignedBB field, Room roomIn, LevelConfig config) {
-		Room room = new Room(roomIn);
+	protected IRoom randomizeRoomCoords(Random random, ICoords origin, AxisAlignedBB field, IRoom roomIn, LevelConfig config) {
+		IRoom room = roomIn.copy();//new Room(roomIn);
 		// generate a ranom set of coords
 		ICoords c = randomizeCoords(random, origin, field, config);
 		// center room using the random coords
@@ -583,12 +590,12 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room randomizeDimensions(Room roomIn) {
+	protected IRoom randomizeDimensions(IRoom roomIn) {
 		return randomizeDimensions(getRandom(), roomIn, getConfig());
 	}
 	
-	protected Room randomizeDimensions(Random random, Room roomIn, LevelConfig config) {
-		Room room = new Room(roomIn);
+	protected IRoom randomizeDimensions(Random random, IRoom roomIn, LevelConfig config) {
+		IRoom room = roomIn.copy();//new Room(roomIn);
 		room.setWidth(Math.max(Room.MIN_WIDTH, RandomHelper.randomInt(random, config.getWidth().getMinInt(), config.getWidth().getMaxInt())));
 		room.setDepth(Math.max(Room.MIN_DEPTH, RandomHelper.randomInt(random, config.getDepth().getMinInt(), config.getDepth().getMaxInt())));
 		room.setHeight(Math.max(Room.MIN_HEIGHT, RandomHelper.randomInt(random, config.getHeight().getMinInt(), config.getHeight().getMaxInt())));		
@@ -604,8 +611,8 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected List<Room> applyDistanceBuffering() {
-		List<Room> bufferedRooms = new ArrayList<>();
+	protected List<IRoom> applyDistanceBuffering() {
+		List<IRoom> bufferedRooms = new ArrayList<>();
 		/*
 		 * a count of the number times a single room is processed against the list of buffered rooms
 		 */
@@ -619,7 +626,7 @@ public class LevelBuilder {
 		 * process all the unbuffered rooms that were added for this level
 		 */
 		rooms:
-			for (Room room : this.spawned) {
+			for (IRoom room : this.spawned) {
 				if (room.isReject()) {
 //					logger.info(String.format("Ignoring... room is flagged as rejected."));
 					incrementLossToDistanceBuffering(1);
@@ -642,7 +649,7 @@ public class LevelBuilder {
 								incrementLossToDistanceBuffering(1);
 								continue rooms;
 							}
-							for (Room bufferedRoom : bufferedRooms) {
+							for (IRoom bufferedRoom : bufferedRooms) {
 								//Room bufferedRoom = bufferedRooms.get(bufferedRoomIndex);
 //																logger.info("\n-------------------\nTesting against processed room: " + bufferedRoom.getId());
 								AxisAlignedBB bufferedBB = bufferedRoom.getXZBoundingBox();
@@ -699,7 +706,7 @@ public class LevelBuilder {
 									// apply force vector to room
 									room = room.addXZForce(angle, force);
 									// update distance
-									room.setDistance(room.getCenter().getDistanceSq(startPoint));
+//									room.setDistance(room.getCenter().getDistanceSq(startPoint));
 									roomBB = room.getXZBoundingBox();
 									//									logger.info("New Room:" +  room);
 
@@ -748,11 +755,11 @@ public class LevelBuilder {
 	 * @param destLevel the destination level to join to.
 	 * @return
 	 */
-	public Shaft join(Level sourceLevel, Level destLevel) {
+	public Shaft join(ILevel sourceLevel, ILevel destLevel) {
 		Shaft shaft = EMPTY_SHAFT;
 		
-		List<Room> destRooms = destLevel.getRooms().stream().filter(room -> room.isEnd()).collect(Collectors.toList());
-		List<Room> sourceRooms = sourceLevel.getRooms().stream().filter(room -> room.isStart()).collect(Collectors.toList());
+		List<IRoom> destRooms = destLevel.getRooms().stream().filter(room -> room.isEnd()).collect(Collectors.toList());
+		List<IRoom> sourceRooms = sourceLevel.getRooms().stream().filter(room -> room.isStart()).collect(Collectors.toList());
 		logger.debug("destRooms.size=" + destRooms.size());
 		logger.debug("sourceRooms.size=" + sourceRooms.size());
 		
@@ -760,8 +767,8 @@ public class LevelBuilder {
 		// check if either list is null
 		if (destRooms == null || sourceRooms == null || destRooms.size() == 0 || sourceRooms.size() == 0) return shaft;
 		
-		Room destRoom = destRooms.get(0);
-		Room sourceRoom = sourceRooms.get(0);
+		IRoom destRoom = destRooms.get(0);
+		IRoom sourceRoom = sourceRooms.get(0);
 		logger.debug("destRoom: " + destRoom);
 		logger.debug("sourceRoom: " + sourceRoom);
 		
@@ -781,7 +788,7 @@ public class LevelBuilder {
 	 * @param destRoom
 	 * @return
 	 */
-	public Shaft join(Room sourceRoom, Room destRoom) {
+	public Shaft join(IRoom sourceRoom, IRoom destRoom) {
 		Shaft shaft = EMPTY_SHAFT;
 		// built the shaft from start room (-1) to end room (+0)
 		if (destRoom.getMinY() - sourceRoom.getMaxY() > 1) {
@@ -1137,7 +1144,7 @@ public class LevelBuilder {
 	 * @param hallway
 	 */
 	private void addDoorsToRoom(Hallway hallway) {
-		for (Door d : hallway.getDoors()) {
+		for (IDoor d : hallway.getDoors()) {
 			// create a new door instance and flip the direction
 			Door door = new Door(d.getCoords(), d.getRoom(), d.getHallway(), d.getDirection().rotate(Rotate.ROTATE_180));
 			d.getRoom().getDoors().add(door);
@@ -1152,7 +1159,7 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected List<Edge> calculatePaths(Random rand, List<Edge> edges, List<Room> rooms, LevelConfig config) {
+	protected List<Edge> calculatePaths(Random rand, List<Edge> edges, List<IRoom> rooms, LevelConfig config) {
 		/*
 		 * holds are the reduced edges generated by the Minimun Spanning Tree
 		 */
@@ -1167,8 +1174,8 @@ public class LevelBuilder {
 		LazyPrimMST mst = new LazyPrimMST(graph);
 		for (Edge e : mst.edges()) {
 			if (e.v < rooms.size() && e.w < rooms.size()) {
-				Room room1 = rooms.get(e.v);
-				Room room2 = rooms.get(e.w);	
+				IRoom room1 = rooms.get(e.v);
+				IRoom room2 = rooms.get(e.w);	
 				paths.add(e);
 				edgeCount[room1.getId()]++;
 				edgeCount[room2.getId()]++;
@@ -1189,8 +1196,8 @@ public class LevelBuilder {
 			int pos = rand.nextInt(edges.size());
 			Edge e = edges.get(pos);
 			// ensure that only non-used edges are selected (and doesn't increment the counter)
-			Room room1 = rooms.get(e.v);
-			Room room2 = rooms.get(e.w);
+			IRoom room1 = rooms.get(e.v);
+			IRoom room2 = rooms.get(e.w);
 			if (!room1.isEnd() && !room2.isEnd() &&
 					edgeCount[room1.getId()] < room1.getDegrees() && edgeCount[room2.getId()] < room2.getDegrees()) {
 				paths.add(e);
@@ -1211,7 +1218,7 @@ public class LevelBuilder {
 	 * @param rooms
 	 * @return
 	 */
-	public Hallway buildHallway(Wayline wayline, List<Room> rooms) {
+	public Hallway buildHallway(Wayline wayline, List<IRoom> rooms) {
 		int width = 3;
 		int depth = 3;
 		
@@ -1298,8 +1305,8 @@ public class LevelBuilder {
 		}
 		
 		// get the rooms referenced by the waypoints
-		Room room1 = rooms.get(startPoint.getId());
-		Room room2 = rooms.get(endPoint.getId());		
+		IRoom room1 = rooms.get(startPoint.getId());
+		IRoom room2 = rooms.get(endPoint.getId());		
 
 		 // the start/end points y-vlaue isn't set, so update them.
 		startPoint.setCoords(startPoint.getCoords().resetY(room1.getCoords().getY()));
@@ -1344,7 +1351,7 @@ public class LevelBuilder {
 	 * @param doorCoords
 	 * @param room
 	 */
-	public Direction calculateDirection(Hallway hw, ICoords coords, Room room) {
+	public Direction calculateDirection(Hallway hw, ICoords coords, IRoom room) {
 		if (hw.getAlignment() == Alignment.HORIZONTAL) {
 			// test which side the door is on
 			if (coords.getX() == hw.getMinX()) {
@@ -1376,12 +1383,12 @@ public class LevelBuilder {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	protected boolean BFS(int start, int end, List<Room> rooms, List<Edge> edges) {
+	protected boolean BFS(int start, int end, List<IRoom> rooms, List<Edge> edges) {
 		// build an adjacency list
 		LinkedList<Integer> adj[];
 
 		adj = new LinkedList[rooms.size()];
-		for (Room r : rooms) {
+		for (IRoom r : rooms) {
 			adj[r.getId()] = new LinkedList<>();
 		}
 		
@@ -1431,12 +1438,12 @@ public class LevelBuilder {
 	 * @param rooms
 	 * @return
 	 */
-	protected List<Edge> triangulate(List<Room> rooms) {
+	protected List<Edge> triangulate(List<IRoom> rooms) {
 		/*
 		 * maps all rooms by XZ plane (ie x:z)
 		 * this is required for the Delaunay Triangulation library because it only returns edges without any identifying properties, only points
 		 */
-		Map<String, Room> map = new HashMap<>();
+		Map<String, IRoom> map = new HashMap<>();
 		/*
 		 * holds all rooms in Vector2D format.
 		 * used for the Delaunay Triangulation library to calculate all the edges between rooms.
@@ -1461,7 +1468,7 @@ public class LevelBuilder {
 		Collections.sort(rooms, Room.idComparator);
 
 		// map all rooms by XZ plane and build all edges.
-		for (Room room : rooms) {
+		for (IRoom room : rooms) {
 			ICoords center = room.getCoords();
 			// map out the rooms by IDs
 			map.put(center.getX() + ":" + center.getZ(), room);
@@ -1495,9 +1502,9 @@ public class LevelBuilder {
 
 		for(Triangle2D triangle : triangles) {
 			// locate the corresponding rooms from the points of the triangles
-			Room r1 = map.get((int)triangle.a.x + ":" + (int)triangle.a.y);
-			Room r2 = map.get((int)triangle.b.x + ":" + (int)triangle.b.y);
-			Room r3 = map.get((int)triangle.c.x + ":" + (int)triangle.c.y);
+			IRoom r1 = map.get((int)triangle.a.x + ":" + (int)triangle.a.y);
+			IRoom r2 = map.get((int)triangle.b.x + ":" + (int)triangle.b.y);
+			IRoom r3 = map.get((int)triangle.c.x + ":" + (int)triangle.c.y);
 
 			// build an edge based on room distance matrix
 			// begin Minimum Spanning Tree calculations
@@ -1519,7 +1526,7 @@ public class LevelBuilder {
 				// increment the number of edges leading to the end room
 				endEdgeCount++;
 				// get the end room
-				Room end = r1.isEnd() ? r1 : r2;
+				IRoom end = r1.isEnd() ? r1 : r2;
 				if (endEdgeCount >= end.getDegrees()) {
 					isEndEdgeMet = true;
 				}
@@ -1557,13 +1564,13 @@ public class LevelBuilder {
 	 * @param rooms
 	 * @return
 	 */
-	protected static double[][] getDistanceMatrix(List<Room> rooms) {
+	protected static double[][] getDistanceMatrix(List<IRoom> rooms) {
 		double[][] matrix = new double[rooms.size()][rooms.size()];
 
 		for (int i = 0; i < rooms.size(); i++) {
-			Room room = rooms.get(i);
+			IRoom room = rooms.get(i);
 			for (int j = 0; j < rooms.size(); j++) {
-				Room node = rooms.get(j);
+				IRoom node = rooms.get(j);
 				if (room == node) {
 					matrix[i][j] = 0.0;
 				}
@@ -1596,8 +1603,8 @@ public class LevelBuilder {
 
 		for (Edge path : this.paths) {
 			// get the rooms
-			Room room1 = rooms.get(path.v);
-			Room room2 = rooms.get(path.w);
+			IRoom room1 = rooms.get(path.v);
+			IRoom room2 = rooms.get(path.w);
 //			logger.info(String.format("Connecting: [%d] with [%d]", room1.getId(), room2.getId()));
 			
 			// get the midpoint between room1 and room2
@@ -1613,19 +1620,19 @@ public class LevelBuilder {
 			 * UPDATE 8-5-2016 it IS necessary to record the ID of the room as the Y value of the room needs to be inspected
 			 * when building the hallway
 			 */
-			Map<Integer, Room> minXMap = new HashMap<>(5);
+			Map<Integer, IRoom> minXMap = new HashMap<>(5);
 			minXMap.put(new Integer(room1.getMinX()), room1);
 			minXMap.put(new Integer(room2.getMinX()), room2);
 			
-			Map<Integer, Room> maxXMap = new HashMap<>(5);
+			Map<Integer, IRoom> maxXMap = new HashMap<>(5);
 			maxXMap.put(new Integer(room1.getMaxX()), room1);
 			maxXMap.put(new Integer(room2.getMaxX()), room2);
 			
-			Map<Integer, Room> minZMap = new HashMap<>(5);
+			Map<Integer, IRoom> minZMap = new HashMap<>(5);
 			minZMap.put(new Integer(room1.getMinZ()), room1);
 			minZMap.put(new Integer(room2.getMinZ()), room2);
 			
-			Map<Integer, Room> maxZMap = new HashMap<>(5);
+			Map<Integer, IRoom> maxZMap = new HashMap<>(5);
 			maxZMap.put(new Integer(room1.getMaxZ()), room1);
 			maxZMap.put(new Integer(room2.getMaxZ()), room2);			
 			
@@ -1775,7 +1782,7 @@ public class LevelBuilder {
 	 * @param stack
 	 * @return 
 	 */
-	protected List<Wayline> resolveWaylineRoomIntersections(List<Room> rooms, Stack<Wayline> stack) {
+	protected List<Wayline> resolveWaylineRoomIntersections(List<IRoom> rooms, Stack<Wayline> stack) {
 		List<Wayline> waylines = new ArrayList<>();
 		List<Wayline> result = new ArrayList<>();
 		int failSafeLimit = rooms.size() * 3;
@@ -1784,7 +1791,7 @@ public class LevelBuilder {
 			failSafeCount++;
 			Wayline wayline = stack.pop();
 			//=======
-			for (Room room : rooms) {
+			for (IRoom room : rooms) {
 //				logger.info(String.format("Checking against room [%d]", room.getId()));
 				if (wayline == null) {
 					logger.trace("Wayline is null on room:" + room.getId());
@@ -1833,7 +1840,7 @@ public class LevelBuilder {
 	 * @param wayline
 	 * @return
 	 */
-	protected List<Wayline> resolveWaylineRoomIntersection(Room room, Wayline wayline) {
+	protected List<Wayline> resolveWaylineRoomIntersection(IRoom room, Wayline wayline) {
 		List<Wayline> waylines = new ArrayList<>();
 		Wayline remainderWayline1 = null;
 		Wayline remainderWayline2 = null;
@@ -1934,10 +1941,10 @@ public class LevelBuilder {
 	 * @return
 	 */
 	@Deprecated
-	protected List<Wayline> resolveWaylineRoomIntersections(List<Room> rooms, Wayline wayline) {
+	protected List<Wayline> resolveWaylineRoomIntersections(List<IRoom> rooms, Wayline wayline) {
 		List<Wayline> waylines = new ArrayList<>();
 		
-		for (Room room : rooms) {
+		for (IRoom room : rooms) {
 			logger.trace(String.format("Checking against room [%d]", room.getId()));
 			if (wayline == null) {
 				logger.debug("Wayline is null on room:" + room.getId());
@@ -1966,7 +1973,7 @@ public class LevelBuilder {
 	 * @return
 	 */
 	@Deprecated
-	protected Wayline resolveWaylineRoomIntersection(Room room, Wayline wayline, List<Wayline> waylines) {
+	protected Wayline resolveWaylineRoomIntersection(IRoom room, Wayline wayline, List<Wayline> waylines) {
 		Wayline newWayline = null;
 		Wayline remainderWayline = null;
 		
@@ -2089,11 +2096,11 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected List<Room> selectValidRooms() {
-		List<Room> met = new ArrayList<>();
+	protected List<IRoom> selectValidRooms() {
+		List<IRoom> met = new ArrayList<>();
 		int roomId = 0;
 
-		for (Room room : this.rooms) {
+		for (IRoom room : this.rooms) {
 			logger.debug("Room coords -> {}", room.getCoords());
 			if (room.isObstacle()) {
 				continue;
@@ -2159,7 +2166,7 @@ public class LevelBuilder {
 	 * @param room
 	 * @return
 	 */
-	protected boolean meetsRoomConstraints(Room room) {
+	protected boolean meetsRoomConstraints(IRoom room) {
 		if (room == null || room.isReject()) return false;
 		if (!getConfig().isMinecraftConstraintsOn()) return true;
 		
@@ -2236,7 +2243,7 @@ public class LevelBuilder {
 	 * 
 	 * @return
 	 */
-	protected Room buildStartRoom() {
+	protected IRoom buildStartRoom() {
 		return buildStartRoom(getStartPoint(), getConfig());
 	}
 	
@@ -2248,11 +2255,11 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	public Room buildStartRoom(ICoords startPoint, LevelConfig config) {
+	public IRoom buildStartRoom(ICoords startPoint, LevelConfig config) {
 		/*
 		 * the start of the level
 		 */
-		Room startRoom = new Room().setStart(true).setAnchor(true).setType(Type.LADDER);
+		IRoom startRoom = new Room().setStart(true).setAnchor(true).setType(Type.LADDER);
 		startRoom = randomizeDimensions(getRandom(), startRoom, config);
 		// ensure min dimensions are met for start room
 		startRoom.setWidth(Math.max(7, startRoom.getWidth()));
@@ -2267,7 +2274,7 @@ public class LevelBuilder {
 						startPoint.getY(),
 						startPoint.getZ()-(startRoom.getDepth()/2)));
 		//startRoom.setDistance(startRoom.getCoords().getDistanceSq(startPoint));
-		startRoom.setDistance(0.0);
+//		startRoom.setDistance(0.0);
 		// randomize a direction
 		startRoom.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
 		// test if the room meets conditions to be placed in the minecraft world
@@ -2336,8 +2343,8 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room buildPlannedRoom(Random random, ICoords origin, AxisAlignedBB field, List<Room> plannedRooms, LevelConfig config) {
-		Room plannedRoom = new Room();
+	protected IRoom buildPlannedRoom(Random random, ICoords origin, AxisAlignedBB field, List<Room> plannedRooms, LevelConfig config) {
+		IRoom plannedRoom = new Room();
 		
 		/* 
 		 * check to make sure planned rooms don't intersect.
@@ -2377,7 +2384,7 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room buildPlannedRoom(List<Room> plannedRooms, LevelConfig config) {
+	protected IRoom buildPlannedRoom(List<Room> plannedRooms, LevelConfig config) {
 		return buildPlannedRoom(getRandom(), getOrigin(), getField(), plannedRooms, config);
 	}
 	
@@ -2390,12 +2397,12 @@ public class LevelBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected Room buildBossRoom(World world, Random rand,
+	protected IRoom buildBossRoom(World world, Random rand,
 			ICoords startPoint, List<Room> predefinedRooms, LevelConfig config) {
 		final int BOSS_ROOM_MIN_XZ = 10;
 		final int BOSS_ROOM_MIN_Y = 10;
 		
-		Room bossRoom = buildEndRoom(predefinedRooms).setType(Type.BOSS).setDegrees(1);	
+		IRoom bossRoom = buildEndRoom(predefinedRooms).setType(Type.BOSS).setDegrees(1);	
 		// ensure min dimensions are met for start room
 		bossRoom.setWidth(Math.max(BOSS_ROOM_MIN_XZ, bossRoom.getWidth()));
 		bossRoom.setDepth(Math.max(BOSS_ROOM_MIN_XZ, bossRoom.getDepth()));
@@ -2412,7 +2419,7 @@ public class LevelBuilder {
 	 * @return
 	 */
 	@Deprecated
-	protected Room buildEntranceRoom(World world, Random rand, ICoords surfaceCoords, Room startRoom,
+	protected IRoom buildEntranceRoom(World world, Random rand, ICoords surfaceCoords, Room startRoom,
 			LevelConfig levelConfig) {
 		
 		Room entranceRoom = new Room(startRoom);
@@ -2505,14 +2512,14 @@ public class LevelBuilder {
 	/**
 	 * @return the plannedRooms
 	 */
-	public List<Room> getPlannedRooms() {
+	public List<IRoom> getPlannedRooms() {
 		return plannedRooms;
 	}
 
 	/**
 	 * @param plannedRooms the plannedRooms to set
 	 */
-	private void setPlannedRooms(List<Room> plannedRooms) {
+	private void setPlannedRooms(List<IRoom> plannedRooms) {
 		this.plannedRooms = plannedRooms;
 	}
 
@@ -2547,7 +2554,7 @@ public class LevelBuilder {
 	/**
 	 * @return the roomBuilder
 	 */
-	public RoomBuilder getRoomBuilder() {
+	public IRoomBuilder getRoomBuilder() {
 		return roomBuilder;
 	}
 
@@ -2562,7 +2569,7 @@ public class LevelBuilder {
 	 * 
 	 * @return
 	 */
-	public List<Room> getSpawned() {
+	public List<IRoom> getSpawned() {
 		return spawned;
 	}
 
@@ -2570,7 +2577,7 @@ public class LevelBuilder {
 	 * 
 	 * @param spawned
 	 */
-	public void setSpawned(List<Room> spawned) {
+	public void setSpawned(List<IRoom> spawned) {
 		this.spawned = spawned;
 	}
 	

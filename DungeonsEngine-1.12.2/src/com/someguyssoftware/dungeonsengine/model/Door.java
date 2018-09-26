@@ -12,17 +12,17 @@ import com.someguyssoftware.gottschcore.random.RandomHelper;
  * @version 2.0
  * @since 1.0.0
  */
-public class Door {	
+public class Door implements IDoor {	
 	/**
 	 * @since 2.0
 	 */
 	private int id;
 	private ICoords coords;
-	private Room room;
+	private IRoom room;
 	/**
 	 * @since 2.0
 	 */
-	private Hallway hallway;
+	private IHallway hallway;
 	/**
 	 * @since 2.0
 	 */
@@ -54,7 +54,7 @@ public class Door {
 	 * @param direction
 	 * @since 2.0
 	 */
-	public Door(ICoords coords, Room room, Hallway hallway, Direction direction) {
+	public Door(ICoords coords, IRoom room, IHallway hallway, Direction direction) {
 		setId(RandomHelper.randomInt(5001, 9999));
 		this.coords = coords;
 		this.room = room;
@@ -62,62 +62,82 @@ public class Door {
 		this.direction = direction;
 	}
 
-	/**
-	 * 
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#getId()
 	 */
+	@Override
 	public int getId() {
 		return id;
 	}
 
-	/**
-	 * 
-	 * @param id
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#setId(int)
 	 */
+	@Override
 	public void setId(int id) {
 		this.id = id;
 	}
 	
-	/**
-	 * @return the coords
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#getCoords()
 	 */
+	@Override
 	public ICoords getCoords() {
 		return coords;
 	}
 
-	/**
-	 * @param coords the coords to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#setCoords(com.someguyssoftware.gottschcore.positional.ICoords)
 	 */
+	@Override
 	public void setCoords(ICoords coords) {
 		this.coords = coords;
 	}
 
-	/**
-	 * @return the room
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#getRoom()
 	 */
-	public Room getRoom() {
+	@Override
+	public IRoom getRoom() {
 		return room;
 	}
 
-	/**
-	 * @param room the room to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#setRoom(com.someguyssoftware.dungeonsengine.model.IRoom)
 	 */
-	public void setRoom(Room room) {
+	@Override
+	public void setRoom(IRoom room) {
 		this.room = room;
 	}
 
-	public Hallway getHallway() {
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#getHallway()
+	 */
+	@Override
+	public IHallway getHallway() {
 		return hallway;
 	}
 
-	public void setHallway(Hallway hallway) {
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#setHallway(com.someguyssoftware.dungeonsengine.model.IHallway)
+	 */
+	@Override
+	public void setHallway(IHallway hallway) {
 		this.hallway = hallway;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#getDirection()
+	 */
+	@Override
 	public Direction getDirection() {
 		return direction;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDoor#setDirection(com.someguyssoftware.gottschcore.enums.Direction)
+	 */
+	@Override
 	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}

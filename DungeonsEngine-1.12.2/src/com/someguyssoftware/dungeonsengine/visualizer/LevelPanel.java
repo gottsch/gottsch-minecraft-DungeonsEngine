@@ -12,17 +12,21 @@ import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
 import com.someguyssoftware.dungeonsengine.builder.LevelBuilder;
+import com.someguyssoftware.dungeonsengine.builder.RoomBuilder;
 import com.someguyssoftware.dungeonsengine.graph.Wayline;
 import com.someguyssoftware.dungeonsengine.graph.mst.Edge;
-import com.someguyssoftware.dungeonsengine.model.Level;
+import com.someguyssoftware.dungeonsengine.model.ILevel;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.Room;
+
+import net.minecraft.util.math.AxisAlignedBB;
 
 /**
  * @author Mark Gottschling on Sep 17, 2018
  *
  */
 public class LevelPanel extends JPanel {
-	private Level level;
+	private ILevel level;
 	private LevelBuilder builder;
 	
 	public static int CANVAS_WIDTH = 850;
@@ -33,7 +37,7 @@ public class LevelPanel extends JPanel {
 	/**
 	 * 
 	 */
-	public LevelPanel(Level level, LevelBuilder builder) {
+	public LevelPanel(ILevel level, LevelBuilder builder) {
 		super();
 		this.level = level;
 		this.builder = builder;
@@ -81,8 +85,9 @@ public class LevelPanel extends JPanel {
         g2d.fillRect(fieldStartX, fieldStartY, 	fieldWidth, fieldDepth);
 
         // normalize and center level field
-        width = (int) (builder.getRoomBuilder().getField().maxX - builder.getRoomBuilder().getField().minX);
-        depth = (int) (builder.getRoomBuilder().getField().maxZ - builder.getRoomBuilder().getField().minZ);
+        AxisAlignedBB field = ((RoomBuilder)builder.getRoomBuilder()).getField();
+        width = (int) (field.maxX - field.minX);
+        depth = (int) (field.maxZ - field.minZ);
         fieldWidth =  (int)(width * sizeMultiplier);
         fieldDepth =  (int)(depth*sizeMultiplier);
         int roomFieldStartX = CANVAS_START_X + (CANVAS_WIDTH/2) - (fieldWidth/2);
@@ -100,8 +105,7 @@ public class LevelPanel extends JPanel {
         g2d.drawString("Dungeon Field Size: " + (builder.getField().maxX-builder.getField().minX) + " by " +
         (builder.getField().maxZ-builder.getField().minZ), 10, 40);
         // level room size
-        g2d.drawString("Room Field Size: " + (builder.getRoomBuilder().getField().maxX-builder.getRoomBuilder().getField().minX) + " by " +
-        (builder.getRoomBuilder().getField().maxZ-builder.getRoomBuilder().getField().minZ), 10, 50);      
+        g2d.drawString("Room Field Size: " + (field.maxX-field.minX) + " by " + (field.maxZ-field.minZ), 10, 50);      
         g2d.drawString("# of Spawned Rooms: " + builder.getSpawned().size(), 10, 60);
         g2d.drawString("# of Rooms Lost to Distance Buffering: " + builder.getRoomLossToDistanceBuffering(), 10, 70);
         g2d.drawString("# of Rooms Lost to Validation: " + builder.getRoomLossToValidation(), 10, 80);
@@ -116,7 +120,7 @@ public class LevelPanel extends JPanel {
 
         
         // normalize rooms
-        for (Room room : level.getRooms()) {
+        for (IRoom room : level.getRooms()) {
         	System.out.println(room.getId() + ") " + room.printDimensions());
         	System.out.println(room.getId() + ")" + room.printCenter());
         	if (room.isStart()) System.out.println("Start");

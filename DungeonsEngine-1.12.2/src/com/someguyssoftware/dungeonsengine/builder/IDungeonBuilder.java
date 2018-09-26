@@ -5,9 +5,9 @@ package com.someguyssoftware.dungeonsengine.builder;
 
 import java.util.Random;
 
-import com.someguyssoftware.dungeons2.model.Dungeon;
-import com.someguyssoftware.dungeons2.model.DungeonConfig;
-import com.someguyssoftware.dungeons2.model.Room;
+import com.someguyssoftware.dungeonsengine.config.DungeonConfig;
+import com.someguyssoftware.dungeonsengine.model.Dungeon;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 
 import net.minecraft.world.World;
@@ -46,6 +46,6 @@ public interface IDungeonBuilder {
 	 * @param startPoint
 	 * @return
 	 */
-	Room buildEntranceRoom(World world, Random rand, ICoords startPoint);
+	IRoom buildEntranceRoom(World world, Random rand, ICoords startPoint);
 
 }
