@@ -13,7 +13,6 @@ import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.dungeonsengine.model.Room.Type;
-import com.someguyssoftware.gottschcore.Quantity;
 import com.someguyssoftware.gottschcore.enums.Direction;
 import com.someguyssoftware.gottschcore.positional.Coords;
 import com.someguyssoftware.gottschcore.positional.ICoords;
@@ -29,63 +28,32 @@ public class RoomBuilder implements IRoomBuilder {
 	public static Logger logger = LogManager.getLogger("DungeonsEngine");
 	public static final IRoom EMPTY_ROOM = new Room();
 	
-	private LevelConfig config;
-	private Random random;
-	private ICoords origin;
+//	private LevelConfig config;
+//	private Random random;
+//	private ICoords origin;
+	/*
+	 * a room may have it's own field separate from the level
+	 */
 	private AxisAlignedBB field;
-	private ICoords startPoint;
+//	private ICoords startPoint;
 	
 	/**
 	 * 
+	 * @param field
 	 */
-	public RoomBuilder(Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config) {
-		this.random = random;
+	public RoomBuilder(AxisAlignedBB field) {
 		this.field = field;
-		this.origin = new Coords((int) field.minX, 0, (int) field.minZ);
-		this.startPoint = startPoint;
-		this.config = config;
 	}
-
-//	/**
-//	 * 
-//	 * @param random
-//	 * @return
-//	 */
-//	public RoomBuilder withRandom(Random random) {
-//		this.random = random;
-//		return this;
-//	}
-//	
-//	/**
-//	 * 
-//	 * @param config
-//	 * @return
-//	 */
-//	public RoomBuilder withConfig(LevelConfig config) {
-//		this.config = config;
-//		return this;
-//	}
-//	
-//	/**
-//	 * 
-//	 * @param field
-//	 * @return
-//	 */
-//	public RoomBuilder withField(AxisAlignedBB field) {
-//		this.setField(field);
-//		this.setOrigin(new Coords((int)field.minX, (int)field.minY, (int)field.minZ));
-//		return this;
-//	}
-//	
-//	/**
-//	 * 
-//	 * @param startPoint
-//	 * @return
-//	 */
-//	public RoomBuilder withStartPoint(ICoords startPoint) {
-//		this.startPoint = startPoint;
-//		return this;
-//	}
+	
+	/**
+	 * 
+	 * @param field
+	 * @return
+	 */
+	public IRoomBuilder withField(AxisAlignedBB field) {
+		this.field = field;
+		return this;
+	}
 	
 	/**
 	 * 
@@ -94,36 +62,42 @@ public class RoomBuilder implements IRoomBuilder {
 	 * @param config
 	 * @return
 	 */
-	protected IRoom randomizeDimensions(IRoom roomIn) {
+	protected IRoom randomizeDimensions(Random random, AxisAlignedBB field, LevelConfig config, IRoom roomIn) {
 //		IRoom room = new Room(roomIn);
 		IRoom room = roomIn.copy();
-		room.setWidth(Math.max(IRoom.MIN_WIDTH, RandomHelper.randomInt(getRandom(), getConfig().getWidth().getMinInt(), getConfig().getWidth().getMaxInt())));
-		room.setDepth(Math.max(IRoom.MIN_DEPTH, RandomHelper.randomInt(getRandom(), getConfig().getDepth().getMinInt(), getConfig().getDepth().getMaxInt())));
-		room.setHeight(Math.max(IRoom.MIN_HEIGHT, RandomHelper.randomInt(getRandom(), getConfig().getHeight().getMinInt(), getConfig().getHeight().getMaxInt())));		
+		room.setWidth(Math.max(IRoom.MIN_WIDTH, RandomHelper.randomInt(random, config.getWidth().getMinInt(), config.getWidth().getMaxInt())));
+		room.setDepth(Math.max(IRoom.MIN_DEPTH, RandomHelper.randomInt(random, config.getDepth().getMinInt(), config.getDepth().getMaxInt())));
+		room.setHeight(Math.max(IRoom.MIN_HEIGHT, RandomHelper.randomInt(random, config.getHeight().getMinInt(), config.getHeight().getMaxInt())));		
 		return room;
 	}
 
 	/**
 	 * 
+	 * @param random
+	 * @param field
+	 * @param config
 	 * @return
 	 */
-	protected ICoords randomizeCoords() {
-		int x = RandomHelper.randomInt(getRandom(), 0, (int) (getField().maxX - getField().minX));
-		int y = RandomHelper.randomInt(getRandom(), getConfig().getYVariance().getMinInt(), getConfig().getYVariance().getMaxInt());
-		int z = RandomHelper.randomInt(getRandom(), 0, (int) (getField().maxZ - getField().minZ));
-		return getOrigin().add(x, y, z);
+	protected ICoords randomizeCoords(Random random, AxisAlignedBB field, LevelConfig config) {
+		int x = RandomHelper.randomInt(random, 0, (int) (field.maxX - field.minX));
+		int y = RandomHelper.randomInt(random, config.getYVariance().getMinInt(), config.getYVariance().getMaxInt());
+		int z = RandomHelper.randomInt(random, 0, (int) (field.maxZ - field.minZ));
+		return new Coords((int)field.minX, (int)field.minY, (int)field.minZ).add(x, y, z);
 	}
 	
 	/**
 	 * 
+	 * @param random
+	 * @param field
+	 * @param config
 	 * @param roomIn
 	 * @return
 	 */
-	protected IRoom randomizeRoomCoords(IRoom roomIn) {
+	protected IRoom randomizeRoomCoords(Random random, AxisAlignedBB field, LevelConfig config, IRoom roomIn) {
 //		Room room = new Room(roomIn);
 		IRoom room = roomIn.copy();
 		// generate a ranom set of coords
-		ICoords c = randomizeCoords();
+		ICoords c = randomizeCoords(random, field, config);
 		// center room using the random coords
 		room.setCoords(c.add(-(room.getWidth()/2), 0, -(room.getDepth()/2)));
 		return room;
@@ -131,22 +105,33 @@ public class RoomBuilder implements IRoomBuilder {
 	
 	/**
 	 * 
+	 * @param random
+	 * @param startPoint
+	 * @param config
+	 * @param room
+	 * @return
+	 */
+	public IRoom buildRoom(Random random, ICoords startPoint, LevelConfig config, IRoom room) {
+		return buildRoom(random, getField(), startPoint, config, room);
+	}
+	
+	/**
+	 * 
 	 * @param roomIn
 	 * @return
 	 */
-	protected IRoom randomizeRoom(IRoom roomIn) {
+	@Override
+	public IRoom buildRoom(Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config, IRoom roomIn) {
 		// randomize dimensions
-		IRoom room = randomizeDimensions(roomIn);
+		IRoom room = randomizeDimensions(random, field, config, roomIn);
 
 		// randomize the rooms
-		room = randomizeRoomCoords(room);
-		// calculate distance squared
-//		room.setDistance(room.getCenter().getDistanceSq(getStartPoint()));
+		room = randomizeRoomCoords(random, field, config, room);
 		
 		// set the degrees (number of edges)
 		room.setDegrees(RandomHelper.randomInt(random, 
-				getConfig().getDegrees().getMinInt(), 
-				getConfig().getDegrees().getMaxInt()));
+				config.getDegrees().getMinInt(), 
+				config.getDegrees().getMaxInt()));
 		
 		// randomize a direction
 		room.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
@@ -154,16 +139,27 @@ public class RoomBuilder implements IRoomBuilder {
 		return room;
 	}
 	
+	/**
+	 * 
+	 * @param random
+	 * @param startPoint
+	 * @param config
+	 * @return
+	 */
+	public IRoom buildStartRoom(Random random, ICoords startPoint, LevelConfig config) {
+		return buildStartRoom(random, getField(), startPoint, config);
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.someguyssoftware.dungeonsengine.builder.IRoomBuilder#buildStartRoom()
 	 */
 	@Override
-	public IRoom buildStartRoom() {
+	public IRoom buildStartRoom(Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config) {
 		/*
 		 * the start of the level
 		 */
 		IRoom startRoom = new Room().setStart(true).setAnchor(true).setType(Type.LADDER);
-		startRoom = randomizeDimensions(startRoom);
+		startRoom = randomizeDimensions(random, field, config, startRoom);
 		// ensure min dimensions are met for start room
 		startRoom.setWidth(Math.max(7, startRoom.getWidth()));
 		startRoom.setDepth(Math.max(7,  startRoom.getDepth()));
@@ -173,29 +169,38 @@ public class RoomBuilder implements IRoomBuilder {
 		
 		// set the starting room coords to be in the middle of the start point
 		startRoom.setCoords(
-				new Coords(getStartPoint().getX()-(startRoom.getWidth()/2),
-						getStartPoint().getY(),
-						getStartPoint().getZ()-(startRoom.getDepth()/2)));
-		
-		//startRoom.setDistance(startRoom.getCoords().getDistanceSq(startPoint));
-//		startRoom.setDistance(0.0);
+				new Coords(startPoint.getX()-(startRoom.getWidth()/2),
+						startPoint.getY(),
+						startPoint.getZ()-(startRoom.getDepth()/2)));
 		
 		// randomize a direction
 		startRoom.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
 		return startRoom;
 	}
 	
+	/**
+	 * 
+	 * @param random
+	 * @param startPoint
+	 * @param config
+	 * @param plannedRooms
+	 * @return
+	 */
+	public IRoom buildEndRoom(Random random, ICoords startPoint, LevelConfig config, List<IRoom> plannedRooms) {
+		return buildEndRoom(random, getField(), startPoint, config, plannedRooms);
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.someguyssoftware.dungeonsengine.builder.IRoomBuilder#buildEndRoom(java.util.List)
 	 */
 	@Override
-	public IRoom buildEndRoom(List<IRoom> plannedRooms) {
+	public IRoom buildEndRoom(Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config, List<IRoom> plannedRooms) {
 		/*
 		 * the end room of the level.
 		 */
 	
 		// build the end room
-		IRoom endRoom  = buildRoom(plannedRooms).setEnd(true).setAnchor(true).setType(Type.LADDER);
+		IRoom endRoom  = buildPlannedRoom(random, field, startPoint, config, plannedRooms).setEnd(true).setAnchor(true).setType(Type.LADDER);
 		// ensure min dimensions are met for start room
 		endRoom.setWidth(Math.max(7, endRoom.getWidth()));
 		endRoom.setDepth(Math.max(7,  endRoom.getDepth()));
@@ -210,7 +215,7 @@ public class RoomBuilder implements IRoomBuilder {
 	 * @see com.someguyssoftware.dungeonsengine.builder.IRoomBuilder#buildRoom(java.util.List)
 	 */
 	@Override
-	public IRoom buildRoom(List<IRoom> plannedRooms) {
+	public IRoom buildPlannedRoom(Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config, List<IRoom> plannedRooms) {
 		IRoom plannedRoom = new Room();		
 		/* 
 		 * check to make sure planned rooms don't intersect.
@@ -220,7 +225,7 @@ public class RoomBuilder implements IRoomBuilder {
 		int endCheckIndex = 0;
 		checkingRooms:
 		do {
-			plannedRoom = randomizeRoom(plannedRoom);
+			plannedRoom = buildRoom(random, field, startPoint, config, plannedRoom);
 			logger.debug("New Planned Room:" + plannedRoom);
 			endCheckIndex++;
 			if (endCheckIndex > 10) {
@@ -241,52 +246,53 @@ public class RoomBuilder implements IRoomBuilder {
 		} while (checkRooms);		
 		return plannedRoom;
 	}
-	
-	/**
-	 * @return the config
-	 */
-	public LevelConfig getConfig() {
-		return config;
-	}
+//	
+//	/**
+//	 * @return the config
+//	 */
+//	public LevelConfig getConfig() {
+//		return config;
+//	}
+//
+//	/**
+//	 * @param config the config to set
+//	 */
+//	private void setConfig(LevelConfig config) {
+//		this.config = config;
+//	}
+//
+//	/**
+//	 * @return the random
+//	 */
+//	public Random getRandom() {
+//		return random;
+//	}
 
-	/**
-	 * @param config the config to set
-	 */
-	private void setConfig(LevelConfig config) {
-		this.config = config;
-	}
-
-	/**
-	 * @return the random
-	 */
-	public Random getRandom() {
-		return random;
-	}
-
-	/**
-	 * @param random the random to set
-	 */
-	private void setRandom(Random random) {
-		this.random = random;
-	}
-
-	/**
-	 * @return the origin
-	 */
-	public ICoords getOrigin() {
-		return origin;
-	}
-
-	/**
-	 * @param origin the origin to set
-	 */
-	public void setOrigin(ICoords origin) {
-		this.origin = origin;
-	}
+//	/**
+//	 * @param random the random to set
+//	 */
+//	private void setRandom(Random random) {
+//		this.random = random;
+//	}
+//
+//	/**
+//	 * @return the origin
+//	 */
+//	public ICoords getOrigin() {
+//		return origin;
+//	}
+//
+//	/**
+//	 * @param origin the origin to set
+//	 */
+//	public void setOrigin(ICoords origin) {
+//		this.origin = origin;
+//	}
 
 	/**
 	 * @return the field
 	 */
+	@Override
 	public AxisAlignedBB getField() {
 		return field;
 	}
@@ -294,21 +300,22 @@ public class RoomBuilder implements IRoomBuilder {
 	/**
 	 * @param field the field to set
 	 */
+	@Override
 	public void setField(AxisAlignedBB field) {
 		this.field = field;
 	}
 
-	/**
-	 * @return the startPoint
-	 */
-	public ICoords getStartPoint() {
-		return startPoint;
-	}
-
-	/**
-	 * @param startPoint the startPoint to set
-	 */
-	public void setStartPoint(ICoords startPoint) {
-		this.startPoint = startPoint;
-	}
+//	/**
+//	 * @return the startPoint
+//	 */
+//	public ICoords getStartPoint() {
+//		return startPoint;
+//	}
+//
+//	/**
+//	 * @param startPoint the startPoint to set
+//	 */
+//	public void setStartPoint(ICoords startPoint) {
+//		this.startPoint = startPoint;
+//	}
 }

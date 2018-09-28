@@ -4,7 +4,9 @@
 package com.someguyssoftware.dungeonsengine.visualizer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -19,12 +21,9 @@ import com.someguyssoftware.dungeonsengine.builder.RoomBuilder;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.model.ILevel;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
-import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.gottschcore.Quantity;
-import com.someguyssoftware.gottschcore.enums.Direction;
 import com.someguyssoftware.gottschcore.positional.Coords;
 import com.someguyssoftware.gottschcore.positional.ICoords;
-import com.someguyssoftware.gottschcore.random.RandomHelper;
 
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -59,6 +58,9 @@ public class LevelVisualizer {
 		if (args.length ==1) seed = Long.valueOf(args[0]);
 		Random random = new Random(seed);
 		
+		// set a map to contain properties
+		Map<String, Object> props = new HashMap<>();
+		
 		// build a level
 		LevelConfig config = new LevelConfig();
 		config.setNumberOfRooms(new Quantity(25, 50)); // VAST = 25-50
@@ -71,7 +73,7 @@ public class LevelVisualizer {
 		config.setZDistance(new Quantity(-30*factor, 30*factor));
 		config.setYVariance(new Quantity(0, 0));
 		config.setMinecraftConstraintsOn(false);
-		config.setSupportOn(false);
+		config.setSupportOn(false);		
 		
 		/*
 		 * setup values for builders
@@ -87,15 +89,19 @@ public class LevelVisualizer {
 				new BlockPos(Math.min(roomField.maxX+(w/3), levelField.maxX), 0, 
 						Math.min(roomField.maxZ+(d/3), levelField.maxZ)));
 		
+		// add the additional fields to the props map
+		props.put("roomField", roomField);
+		props.put("endField", endField);
+		
 		// test - add an extra planned room
 		List<IRoom> plannedRooms = new ArrayList<>();
 		
-		RoomBuilder roomBuilder = new RoomBuilder(random, roomField, startPoint, config);		
-		IRoomBuilder endRoomBuilder = new RoomBuilder(random, endField, startPoint, config);	
-		LevelBuilder builder = new LevelBuilder(null, random); // TODO require room builder in constructor
+		IRoomBuilder roomBuilder = new RoomBuilder(roomField);		
+//		IRoomBuilder endRoomBuilder = new RoomBuilder(random, endField, startPoint, config);	
+		LevelBuilder builder = new LevelBuilder(null, random, levelField, startPoint, config); // TODO require room builder in constructor
 		builder.setRoomBuilder(roomBuilder);
 		
-		IRoom startRoom = roomBuilder.buildStartRoom();
+		IRoom startRoom = roomBuilder.buildStartRoom(random, startPoint, config);
 //		Room extraRoom = new Room().setDegrees(3)
 //				.setDepth(10).setWidth(10).setAnchor(true)
 //				.setCoords(new Coords(startRoom.getCoords().getX(), 0, startRoom.getCoords().getZ() - 20))
@@ -104,12 +110,12 @@ public class LevelVisualizer {
 		
 		plannedRooms.add(startRoom);
 //		plannedRooms.add(extraRoom);
-		IRoom endRoom =endRoomBuilder.buildEndRoom(plannedRooms);//.setAnchor(false);
+		IRoom endRoom = roomBuilder.buildEndRoom(random, endField, startPoint, config, plannedRooms);//.setAnchor(false);
 
 		ILevel level = builder
-			.withStartPoint(startPoint)		// TODO optional - get from room builder
-			.withConfig(config)						// TODO optional - get from room builder
-			.withField(levelField)					// TODO optional - get from room builder
+//			.withStartPoint(startPoint)		// TODO optional - get from room builder
+//			.withConfig(config)						// TODO optional - get from room builder
+//			.withField(levelField)					// TODO optional - get from room builder
 			.withStartRoom(startRoom)
 			.withEndRoom(endRoom)
 //			.withRoom(extraRoom)
@@ -122,7 +128,7 @@ public class LevelVisualizer {
 		// visualize the level
 		// draw out rectangles
 		JFrame window = new JFrame();
-		JPanel panel = new LevelPanel(level, builder);
+		JPanel panel = new LevelPanel(level, builder, props);
 		window.setTitle("Dungeons2! Level Visualizer 2");
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setBounds(0, 0, 1400, 750);

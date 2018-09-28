@@ -32,6 +32,7 @@ import com.someguyssoftware.dungeonsengine.model.Hallway;
 import com.someguyssoftware.dungeonsengine.model.IDoor;
 import com.someguyssoftware.dungeonsengine.model.ILevel;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
+import com.someguyssoftware.dungeonsengine.model.IShaft;
 import com.someguyssoftware.dungeonsengine.model.Level;
 import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.dungeonsengine.model.Room.Type;
@@ -54,12 +55,18 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-
+/*
+ * TODO update constructor to take in those items absolutely necessary to have a functioning builder
+ * ie. world, random, startPoint, and field.
+ * TODO update the .with() methods (basically setters()) - allow changing of values
+ * TODO update build() methods to check for existence of properties such as startRoom, endRoom and create if neccesary
+ * TODO add clear()
+ */
 /**
  * @author Mark Gottschling on Jul 9, 2016
  *
  */
-public class LevelBuilder {
+public class LevelBuilder implements ILevelBuilder {
 	public static Logger logger = LogManager.getLogger("DungeonsEngine");
 	
 	/**
@@ -166,10 +173,9 @@ public class LevelBuilder {
 	/*
 	 * the min coords of the field
 	 */
-	private ICoords origin;
-	
+	private ICoords origin;	
 
-	private RoomBuilder roomBuilder;
+	private IRoomBuilder roomBuilder;
 	
 	/*
 	 * the number of rooms lost as a result of distance buffering
@@ -182,12 +188,15 @@ public class LevelBuilder {
 	int roomLossToValidation = 0;
 		
 	/**
-	 * 
+	 * Constructs a level builder with default config and room builder.
 	 */
-	public LevelBuilder(World world, Random random) {
+	public LevelBuilder(World world, Random random, AxisAlignedBB field, ICoords startPoint) {
 		this.world = world;
 		this.random = random;
+		this.field = field;
+		this.startPoint = startPoint;
 		this.config = new LevelConfig();
+		this.roomBuilder = new RoomBuilder(field);
 		this.plannedRooms = new ArrayList<>();
 	}
 	
@@ -195,39 +204,59 @@ public class LevelBuilder {
 	 * 
 	 * @param config
 	 */
-	public LevelBuilder(World world, Random random, LevelConfig config) {
-		this(world, random);
+	public LevelBuilder(World world, Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config) {
+		this(world, random, field, startPoint);
 		this.config = config;
 	}
 	
-	public LevelBuilder withRoomBuilder(RoomBuilder builder) {
+	/**
+	 * 
+	 * @param builder
+	 * @return
+	 */
+	public ILevelBuilder withRoomBuilder(RoomBuilder builder) {
 		this.roomBuilder = builder;
 		return this;
 	}
 	
-	public LevelBuilder withConfig(LevelConfig config) {
+	/**
+	 * 
+	 * @param config
+	 * @return
+	 */
+	public ILevelBuilder withConfig(LevelConfig config) {
 		this.config = config;
 		return this;
 	}
 	
-	public LevelBuilder withStartPoint(ICoords startPoint) {
+	/**
+	 * 
+	 * @param startPoint
+	 * @return
+	 */
+	public ILevelBuilder withStartPoint(ICoords startPoint) {
 		this.startPoint = startPoint;
 		return this;
 	}
 	
+	/**
+	 * 
+	 * @param room
+	 * @return
+	 */
 	public LevelBuilder withStartRoom(IRoom room) {
 		// TODO ensure that room has all the start room properties set
 		this.plannedRooms.add(room);
 		return this;
 	}
 	
-	public LevelBuilder withEndRoom(IRoom room) {
+	public ILevelBuilder withEndRoom(IRoom room) {
 		// TODO ensure that room has all the start room properties set
 		this.plannedRooms.add(room);
 		return this;
 	}
 	
-	public LevelBuilder withRoom(IRoom room) {
+	public ILevelBuilder withRoom(IRoom room) {
 		this.plannedRooms.add(room);
 		return this;
 	}
@@ -238,13 +267,11 @@ public class LevelBuilder {
 		return this;
 	}
 	
-	/**
-	 * 
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.builder.ILevelBuilder#build()
 	 */
+	@Override
 	public ILevel build() {
-		// TODO do property checks - ensure there is a start room, end room, etc and create if necessary
-		
 		/*
 		 * local handle to the start room
 		 */
@@ -264,10 +291,7 @@ public class LevelBuilder {
 		// TODO ensure that start point falls within field
 		// TODO check if start room and end room are not null - elsewise generate them.
 		// TODO ensure that start room and end room fall within field
-		
-		
-		// add randomly generated rooms
-		this.spawned = spawnRooms();
+		// TODO do property checks - ensure there is a start room, end room, etc and create if necessary
 
 		// process all predefined rooms and categorize
 		for (IRoom room : this.plannedRooms) {
@@ -279,8 +303,22 @@ public class LevelBuilder {
 				spawned.add(room);
 		}
 		
+		// create a start room if one is not provided
+		if (startRoom == null) {
+			startRoom = getRoomBuilder().buildStartRoom(getRandom(), getStartPoint(), getConfig());
+			anchors.add(startRoom);
+		}
+		
+		// create an end room if one is not provided
+		if (endRoom == null) {
+			endRoom = getRoomBuilder().buildEndRoom(getRandom(), getStartPoint()	, getConfig(), getPlannedRooms());
+			anchors.add(endRoom);
+		}
+				
+		// add randomly generated rooms
+		this.spawned = spawnRooms();
+		
 		// sort working array based on distance
-//		Collections.sort(spawned, Room.distanceComparator);
 		Collections.sort(spawned, new RoomDistanceComparator(startPoint));
 		
 		// TODO swap with strategy pattern here. ie room = getDistanceBufferingStrat().apply(...)
@@ -484,123 +522,123 @@ public class LevelBuilder {
 		// generate rooms
 		for (int i = 0; i < levelSize; i++) {
 			IRoom room = new Room(i);
-			room = roomBuilder.randomizeRoom(room);
+			room = roomBuilder.buildRoom(getRandom(), getStartPoint(), getConfig(), room);
 			// add to the working list that contains all the rooms sorted on distance (farthest to closest)
 			rooms.add(room);
 		}
 		return rooms;
 	}
+//
+//	/**
+//	 * 
+//	 * @param rand
+//	 * @param roomIn
+//	 * @param spawnPoint
+//	 * @param config
+//	 * @return
+//	 */
+//	protected IRoom randomizeRoom(IRoom roomIn) {
+//		return randomizeRoom(getRandom(), getOrigin(), getField(), roomIn, getConfig());
+//	}
+	
+//	/**
+//	 * 
+//	 * @param random
+//	 * @param origin
+//	 * @param field
+//	 * @param roomIn
+//	 * @param config
+//	 * @return
+//	 */
+//	protected IRoom randomizeRoom(Random random, ICoords origin, AxisAlignedBB field, IRoom roomIn, LevelConfig config) {
+//		// randomize dimensions
+//		IRoom room = randomizeDimensions(random, roomIn, config);
+//
+//		// randomize the rooms
+//		room = randomizeRoomCoords(random, origin, field, room, config);
+//		// calculate distance squared
+////		room.setDistance(room.getCenter().getDistanceSq(getStartPoint()));
+//		
+//		// set the degrees (number of edges)
+//		room.setDegrees(RandomHelper.randomInt(random, config.getDegrees().getMinInt(), config.getDegrees().getMaxInt()));
+//		// randomize a direction
+//		room.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
+//
+//		return room;
+//	}
+	
 
-	/**
-	 * 
-	 * @param rand
-	 * @param roomIn
-	 * @param spawnPoint
-	 * @param config
-	 * @return
-	 */
-	protected IRoom randomizeRoom(IRoom roomIn) {
-		return randomizeRoom(getRandom(), getOrigin(), getField(), roomIn, getConfig());
-	}
+//	/**
+//	 * 
+//	 * @param random
+//	 * @param roomIn
+//	 * @param config
+//	 * @return
+//	 */
+//	protected IRoom randomizeRoomCoords(IRoom roomIn) {
+//		return randomizeRoomCoords(getRandom(), getOrigin(), getField(), roomIn, getConfig());
+//	}
 	
-	/**
-	 * 
-	 * @param random
-	 * @param origin
-	 * @param field
-	 * @param roomIn
-	 * @param config
-	 * @return
-	 */
-	protected IRoom randomizeRoom(Random random, ICoords origin, AxisAlignedBB field, IRoom roomIn, LevelConfig config) {
-		// randomize dimensions
-		IRoom room = randomizeDimensions(random, roomIn, config);
+//	/**
+//	 * 
+//	 * @param random
+//	 * @param origin
+//	 * @param field
+//	 * @param roomIn
+//	 * @param config
+//	 * @return
+//	 */
+//	protected IRoom randomizeRoomCoords(Random random, ICoords origin, AxisAlignedBB field, IRoom roomIn, LevelConfig config) {
+//		IRoom room = roomIn.copy();//new Room(roomIn);
+//		// generate a ranom set of coords
+//		ICoords c = randomizeCoords(random, origin, field, config);
+//		// center room using the random coords
+//		room.setCoords(c.add(-(room.getWidth()/2), 0, -(room.getDepth()/2)));
+//		
+//		// Y Variance
+////		room.getCoords().setY(RandomHelper.randomInt(random, config.getYVariance().getMinInt(), config.getYVariance().getMaxInt()));
+//		return room;
+//	}
 
-		// randomize the rooms
-		room = randomizeRoomCoords(random, origin, field, room, config);
-		// calculate distance squared
-//		room.setDistance(room.getCenter().getDistanceSq(getStartPoint()));
-		
-		// set the degrees (number of edges)
-		room.setDegrees(RandomHelper.randomInt(random, config.getDegrees().getMinInt(), config.getDegrees().getMaxInt()));
-		// randomize a direction
-		room.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
-
-		return room;
-	}
+//	/**
+//	 * 
+//	 * @return
+//	 */
+//	protected ICoords randomizeCoords() {
+//		return randomizeCoords(getRandom(), getOrigin(), getField(), getConfig());
+//	}
 	
-
-	/**
-	 * 
-	 * @param random
-	 * @param roomIn
-	 * @param config
-	 * @return
-	 */
-	protected IRoom randomizeRoomCoords(IRoom roomIn) {
-		return randomizeRoomCoords(getRandom(), getOrigin(), getField(), roomIn, getConfig());
-	}
+//	/**
+//	 * 
+//	 * @param random
+//	 * @param config
+//	 * @return
+//	 */
+//	protected ICoords randomizeCoords(Random random, ICoords origin, AxisAlignedBB field, LevelConfig config) {
+//		int x = RandomHelper.randomInt(random, 0, (int) field.maxX);
+//		int y = RandomHelper.randomInt(random, config.getYVariance().getMinInt(), config.getYVariance().getMaxInt());
+//		int z = RandomHelper.randomInt(random, 0, (int) field.maxZ);
+//		return origin.add(x, y, z);
+//	}
 	
-	/**
-	 * 
-	 * @param random
-	 * @param origin
-	 * @param field
-	 * @param roomIn
-	 * @param config
-	 * @return
-	 */
-	protected IRoom randomizeRoomCoords(Random random, ICoords origin, AxisAlignedBB field, IRoom roomIn, LevelConfig config) {
-		IRoom room = roomIn.copy();//new Room(roomIn);
-		// generate a ranom set of coords
-		ICoords c = randomizeCoords(random, origin, field, config);
-		// center room using the random coords
-		room.setCoords(c.add(-(room.getWidth()/2), 0, -(room.getDepth()/2)));
-		
-		// Y Variance
-//		room.getCoords().setY(RandomHelper.randomInt(random, config.getYVariance().getMinInt(), config.getYVariance().getMaxInt()));
-		return room;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	protected ICoords randomizeCoords() {
-		return randomizeCoords(getRandom(), getOrigin(), getField(), getConfig());
-	}
+//	/**
+//	 * 
+//	 * @param rand
+//	 * @param roomIn
+//	 * @param config
+//	 * @return
+//	 */
+//	protected IRoom randomizeDimensions(IRoom roomIn) {
+//		return randomizeDimensions(getRandom(), roomIn, getConfig());
+//	}
 	
-	/**
-	 * 
-	 * @param random
-	 * @param config
-	 * @return
-	 */
-	protected ICoords randomizeCoords(Random random, ICoords origin, AxisAlignedBB field, LevelConfig config) {
-		int x = RandomHelper.randomInt(random, 0, (int) field.maxX);
-		int y = RandomHelper.randomInt(random, config.getYVariance().getMinInt(), config.getYVariance().getMaxInt());
-		int z = RandomHelper.randomInt(random, 0, (int) field.maxZ);
-		return origin.add(x, y, z);
-	}
-	
-	/**
-	 * 
-	 * @param rand
-	 * @param roomIn
-	 * @param config
-	 * @return
-	 */
-	protected IRoom randomizeDimensions(IRoom roomIn) {
-		return randomizeDimensions(getRandom(), roomIn, getConfig());
-	}
-	
-	protected IRoom randomizeDimensions(Random random, IRoom roomIn, LevelConfig config) {
-		IRoom room = roomIn.copy();//new Room(roomIn);
-		room.setWidth(Math.max(Room.MIN_WIDTH, RandomHelper.randomInt(random, config.getWidth().getMinInt(), config.getWidth().getMaxInt())));
-		room.setDepth(Math.max(Room.MIN_DEPTH, RandomHelper.randomInt(random, config.getDepth().getMinInt(), config.getDepth().getMaxInt())));
-		room.setHeight(Math.max(Room.MIN_HEIGHT, RandomHelper.randomInt(random, config.getHeight().getMinInt(), config.getHeight().getMaxInt())));		
-		return room;
-	}
+//	protected IRoom randomizeDimensions(Random random, IRoom roomIn, LevelConfig config) {
+//		IRoom room = roomIn.copy();//new Room(roomIn);
+//		room.setWidth(Math.max(Room.MIN_WIDTH, RandomHelper.randomInt(random, config.getWidth().getMinInt(), config.getWidth().getMaxInt())));
+//		room.setDepth(Math.max(Room.MIN_DEPTH, RandomHelper.randomInt(random, config.getDepth().getMinInt(), config.getDepth().getMaxInt())));
+//		room.setHeight(Math.max(Room.MIN_HEIGHT, RandomHelper.randomInt(random, config.getHeight().getMinInt(), config.getHeight().getMaxInt())));		
+//		return room;
+//	}
 
 	/**
 	 * 
@@ -755,7 +793,7 @@ public class LevelBuilder {
 	 * @param destLevel the destination level to join to.
 	 * @return
 	 */
-	public Shaft join(ILevel sourceLevel, ILevel destLevel) {
+	public IShaft join(ILevel sourceLevel, ILevel destLevel) {
 		Shaft shaft = EMPTY_SHAFT;
 		
 		List<IRoom> destRooms = destLevel.getRooms().stream().filter(room -> room.isEnd()).collect(Collectors.toList());
@@ -803,7 +841,8 @@ public class LevelBuilder {
 			shaft.setWidth(3)
 				.setDepth(3)
 				.setHeight(destRoom.getMinY() - sourceRoom.getMaxY()-1);
-			shaft.setParent(sourceRoom);
+			shaft.setSource(sourceRoom);
+			shaft.setDest(destRoom);
 			
 			// set the coords - it depends on the direction the room is facing
 			switch(shaft.getDirection()) {
@@ -2239,176 +2278,176 @@ public class LevelBuilder {
 		return true;
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
-	protected IRoom buildStartRoom() {
-		return buildStartRoom(getStartPoint(), getConfig());
-	}
+//	/**
+//	 * 
+//	 * @return
+//	 */
+//	protected IRoom buildStartRoom() {
+//		return buildStartRoom(getStartPoint(), getConfig());
+//	}
 	
-	/**
-	 * Builds a room at the centered on the startPoint.
-	 * @param world
-	 * @param rand
-	 * @param startPoint
-	 * @param config
-	 * @return
-	 */
-	public IRoom buildStartRoom(ICoords startPoint, LevelConfig config) {
-		/*
-		 * the start of the level
-		 */
-		IRoom startRoom = new Room().setStart(true).setAnchor(true).setType(Type.LADDER);
-		startRoom = randomizeDimensions(getRandom(), startRoom, config);
-		// ensure min dimensions are met for start room
-		startRoom.setWidth(Math.max(7, startRoom.getWidth()));
-		startRoom.setDepth(Math.max(7,  startRoom.getDepth()));
-		// ensure that start room's dimensions are odd in length
-		if (startRoom.getWidth() % 2 == 0) startRoom.setWidth(startRoom.getWidth()+1);
-		if (startRoom.getDepth() % 2 == 0) startRoom.setDepth(startRoom.getDepth()+1);
-		
-		// set the starting room coords to be in the middle of the start point
-		startRoom.setCoords(
-				new Coords(startPoint.getX()-(startRoom.getWidth()/2),
-						startPoint.getY(),
-						startPoint.getZ()-(startRoom.getDepth()/2)));
-		//startRoom.setDistance(startRoom.getCoords().getDistanceSq(startPoint));
-//		startRoom.setDistance(0.0);
-		// randomize a direction
-		startRoom.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
-		// test if the room meets conditions to be placed in the minecraft world
-		if (config.isMinecraftConstraintsOn() && !meetsRoomConstraints(startRoom)) {
-			logger.debug("Start Room failed room constraints @ " + startRoom.getCenter());
-			if (logger.isWarnEnabled()) {
-				logger.warn(String.format("Start Room has invalid Minecraft world room conditions: %s", startRoom.toString()));
-			}
-			return EMPTY_ROOM;
-		}
-		return startRoom;
-	}
+//	/**
+//	 * Builds a room at the centered on the startPoint.
+//	 * @param world
+//	 * @param rand
+//	 * @param startPoint
+//	 * @param config
+//	 * @return
+//	 */
+//	public IRoom buildStartRoom(ICoords startPoint, LevelConfig config) {
+//		/*
+//		 * the start of the level
+//		 */
+//		IRoom startRoom = new Room().setStart(true).setAnchor(true).setType(Type.LADDER);
+//		startRoom = randomizeDimensions(getRandom(), startRoom, config);
+//		// ensure min dimensions are met for start room
+//		startRoom.setWidth(Math.max(7, startRoom.getWidth()));
+//		startRoom.setDepth(Math.max(7,  startRoom.getDepth()));
+//		// ensure that start room's dimensions are odd in length
+//		if (startRoom.getWidth() % 2 == 0) startRoom.setWidth(startRoom.getWidth()+1);
+//		if (startRoom.getDepth() % 2 == 0) startRoom.setDepth(startRoom.getDepth()+1);
+//		
+//		// set the starting room coords to be in the middle of the start point
+//		startRoom.setCoords(
+//				new Coords(startPoint.getX()-(startRoom.getWidth()/2),
+//						startPoint.getY(),
+//						startPoint.getZ()-(startRoom.getDepth()/2)));
+//		//startRoom.setDistance(startRoom.getCoords().getDistanceSq(startPoint));
+////		startRoom.setDistance(0.0);
+//		// randomize a direction
+//		startRoom.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
+//		// test if the room meets conditions to be placed in the minecraft world
+//		if (config.isMinecraftConstraintsOn() && !meetsRoomConstraints(startRoom)) {
+//			logger.debug("Start Room failed room constraints @ " + startRoom.getCenter());
+//			if (logger.isWarnEnabled()) {
+//				logger.warn(String.format("Start Room has invalid Minecraft world room conditions: %s", startRoom.toString()));
+//			}
+//			return EMPTY_ROOM;
+//		}
+//		return startRoom;
+//	}
+//	
+//	/**
+//	 * 
+//	 * @param plannedRooms
+//	 * @return
+//	 */
+//	public Room buildEndRoom(List<IRoom> plannedRooms) {
+//		return buildEndRoom(getRandom(), getOrigin(), getField(), plannedRooms, getConfig());
+//	}
+//	
+//	/**
+//	 * 
+//	 * @param random
+//	 * @param origin
+//	 * @param field
+//	 * @param plannedRooms
+//	 * @param config
+//	 * @return
+//	 */
+//	public Room buildEndRoom(Random random, ICoords origin, AxisAlignedBB field, List<IRoom> plannedRooms, LevelConfig config) {
+//		/*
+//		 * the end room of the level.
+//		 */
+//
+//		/*
+//		 * change the distance that the end room can be from startpoint.
+//		 * (this chance only affects the end room).
+//		 */
+//		double factor = 2.0;
+//		LevelConfig c2 = new LevelConfig(getConfig());
+//		Quantity qx = new Quantity(c2.getXDistance().getMin(), c2.getXDistance().getMax()*factor);
+//		Quantity qz = new Quantity(c2.getZDistance().getMin(), c2.getZDistance().getMax()*factor);
+//		c2.setXDistance(qx);
+//		c2.setZDistance(qz);
+//		
+//		// build the end room
+//		Room endRoom  = buildPlannedRoom(random, origin , field, plannedRooms, c2).setEnd(true).setAnchor(true).setType(Type.LADDER);
+//		// ensure min dimensions are met for start room
+//		endRoom.setWidth(Math.max(7, endRoom.getWidth()));
+//		endRoom.setDepth(Math.max(7,  endRoom.getDepth()));
+//		// ensure that the room's dimensions are odd in length
+//		if (endRoom.getWidth() % 2 == 0) endRoom.setWidth(endRoom.getWidth()+1);
+//		if (endRoom.getDepth() % 2 == 0) endRoom.setDepth(endRoom.getDepth()+1);
+//		
+//		return endRoom;
+//	}
+//
+//	/**
+//	 * 
+//	 * @param random
+//	 * @param origin
+//	 * @param field
+//	 * @param plannedRooms
+//	 * @param config
+//	 * @return
+//	 */
+//	public IRoom buildPlannedRoom(Random random, ICoords origin, AxisAlignedBB field, List<IRoom> plannedRooms, LevelConfig config) {
+//		IRoom plannedRoom = new Room();
+//		
+//		/* 
+//		 * check to make sure planned rooms don't intersect.
+//		 * test up to 10 times for a successful position
+//		 */
+//		boolean checkRooms = true;
+//		int endCheckIndex = 0;
+//		checkingRooms:
+//		do {
+//			plannedRoom = randomizeRoom(random, origin, field, plannedRoom, config);
+//			logger.debug("New Planned Room:" + plannedRoom);
+//			endCheckIndex++;
+//			if (endCheckIndex > 10) {
+//				logger.warn("Unable to position Planned Room that meets positional criteria.");
+//				return EMPTY_ROOM;
+//			}
+//			for (IRoom room : plannedRooms) {
+//				if (room.getXZBoundingBox().intersects(plannedRoom.getXZBoundingBox())) {
+//					logger.debug("New Planned room intersects with planned list room.");
+//					continue checkingRooms;
+//				}
+//			}
+//			// test if the room meets conditions to be placed in the minecraft world
+//			if (!meetsRoomConstraints(plannedRoom)) {
+//				break;
+//			}			
+//			checkRooms = false;			
+//		} while (checkRooms);		
+//		return plannedRoom;
+//	}
+//	
+//	/**
+//	 * 
+//	 * @param world
+//	 * @param rand
+//	 * @param startPoint
+//	 * @param config
+//	 * @return
+//	 */
+//	protected IRoom buildPlannedRoom(List<IRoom> plannedRooms, LevelConfig config) {
+//		return buildPlannedRoom(getRandom(), getOrigin(), getField(), plannedRooms, config);
+//	}
 	
-	/**
-	 * 
-	 * @param plannedRooms
-	 * @return
-	 */
-	public Room buildEndRoom(List<Room> plannedRooms) {
-		return buildEndRoom(getRandom(), getOrigin(), getField(), plannedRooms, getConfig());
-	}
-	
-	/**
-	 * 
-	 * @param random
-	 * @param origin
-	 * @param field
-	 * @param plannedRooms
-	 * @param config
-	 * @return
-	 */
-	public Room buildEndRoom(Random random, ICoords origin, AxisAlignedBB field, List<Room> plannedRooms, LevelConfig config) {
-		/*
-		 * the end room of the level.
-		 */
-
-		/*
-		 * change the distance that the end room can be from startpoint.
-		 * (this chance only affects the end room).
-		 */
-		double factor = 2.0;
-		LevelConfig c2 = new LevelConfig(getConfig());
-		Quantity qx = new Quantity(c2.getXDistance().getMin(), c2.getXDistance().getMax()*factor);
-		Quantity qz = new Quantity(c2.getZDistance().getMin(), c2.getZDistance().getMax()*factor);
-		c2.setXDistance(qx);
-		c2.setZDistance(qz);
-		
-		// build the end room
-		Room endRoom  = buildPlannedRoom(random, origin , field, plannedRooms, c2).setEnd(true).setAnchor(true).setType(Type.LADDER);
-		// ensure min dimensions are met for start room
-		endRoom.setWidth(Math.max(7, endRoom.getWidth()));
-		endRoom.setDepth(Math.max(7,  endRoom.getDepth()));
-		// ensure that the room's dimensions are odd in length
-		if (endRoom.getWidth() % 2 == 0) endRoom.setWidth(endRoom.getWidth()+1);
-		if (endRoom.getDepth() % 2 == 0) endRoom.setDepth(endRoom.getDepth()+1);
-		
-		return endRoom;
-	}
-
-	/**
-	 * 
-	 * @param random
-	 * @param origin
-	 * @param field
-	 * @param plannedRooms
-	 * @param config
-	 * @return
-	 */
-	protected IRoom buildPlannedRoom(Random random, ICoords origin, AxisAlignedBB field, List<Room> plannedRooms, LevelConfig config) {
-		IRoom plannedRoom = new Room();
-		
-		/* 
-		 * check to make sure planned rooms don't intersect.
-		 * test up to 10 times for a successful position
-		 */
-		boolean checkRooms = true;
-		int endCheckIndex = 0;
-		checkingRooms:
-		do {
-			plannedRoom = randomizeRoom(random, origin, field, plannedRoom, config);
-			logger.debug("New Planned Room:" + plannedRoom);
-			endCheckIndex++;
-			if (endCheckIndex > 10) {
-				logger.warn("Unable to position Planned Room that meets positional criteria.");
-				return EMPTY_ROOM;
-			}
-			for (Room room : plannedRooms) {
-				if (room.getXZBoundingBox().intersects(plannedRoom.getXZBoundingBox())) {
-					logger.debug("New Planned room intersects with planned list room.");
-					continue checkingRooms;
-				}
-			}
-			// test if the room meets conditions to be placed in the minecraft world
-			if (!meetsRoomConstraints(plannedRoom)) {
-				break;
-			}			
-			checkRooms = false;			
-		} while (checkRooms);		
-		return plannedRoom;
-	}
-	
-	/**
-	 * 
-	 * @param world
-	 * @param rand
-	 * @param startPoint
-	 * @param config
-	 * @return
-	 */
-	protected IRoom buildPlannedRoom(List<Room> plannedRooms, LevelConfig config) {
-		return buildPlannedRoom(getRandom(), getOrigin(), getField(), plannedRooms, config);
-	}
-	
-	/**
-	 * 
-	 * @param world
-	 * @param rand
-	 * @param startPoint
-	 * @param predefinedRooms
-	 * @param config
-	 * @return
-	 */
-	protected IRoom buildBossRoom(World world, Random rand,
-			ICoords startPoint, List<Room> predefinedRooms, LevelConfig config) {
-		final int BOSS_ROOM_MIN_XZ = 10;
-		final int BOSS_ROOM_MIN_Y = 10;
-		
-		IRoom bossRoom = buildEndRoom(predefinedRooms).setType(Type.BOSS).setDegrees(1);	
-		// ensure min dimensions are met for start room
-		bossRoom.setWidth(Math.max(BOSS_ROOM_MIN_XZ, bossRoom.getWidth()));
-		bossRoom.setDepth(Math.max(BOSS_ROOM_MIN_XZ, bossRoom.getDepth()));
-		bossRoom.setHeight(Math.max(Math.min(BOSS_ROOM_MIN_Y, config.getHeight().getMaxInt()),  bossRoom.getHeight()));
-		return bossRoom;
-	}
+//	/**
+//	 * 
+//	 * @param world
+//	 * @param rand
+//	 * @param startPoint
+//	 * @param predefinedRooms
+//	 * @param config
+//	 * @return
+//	 */
+//	public IRoom buildBossRoom(World world, Random rand,
+//			ICoords startPoint, List<IRoom> predefinedRooms, LevelConfig config) {
+//		final int BOSS_ROOM_MIN_XZ = 10;
+//		final int BOSS_ROOM_MIN_Y = 10;
+//		
+//		IRoom bossRoom = buildEndRoom(predefinedRooms).setType(Type.BOSS).setDegrees(1);	
+//		// ensure min dimensions are met for start room
+//		bossRoom.setWidth(Math.max(BOSS_ROOM_MIN_XZ, bossRoom.getWidth()));
+//		bossRoom.setDepth(Math.max(BOSS_ROOM_MIN_XZ, bossRoom.getDepth()));
+//		bossRoom.setHeight(Math.max(Math.min(BOSS_ROOM_MIN_Y, config.getHeight().getMaxInt()),  bossRoom.getHeight()));
+//		return bossRoom;
+//	}
 	
 	/**
 	 * @param world
@@ -2448,6 +2487,7 @@ public class LevelBuilder {
 	/**
 	 * @return the config
 	 */
+	@Override
 	public LevelConfig getConfig() {
 		return config;
 	}
@@ -2455,6 +2495,7 @@ public class LevelBuilder {
 	/**
 	 * @param config the config to set
 	 */
+	@Override
 	public void setConfig(LevelConfig config) {
 		this.config = config;
 	}
@@ -2561,7 +2602,7 @@ public class LevelBuilder {
 	/**
 	 * @param roomBuilder the roomBuilder to set
 	 */
-	public void setRoomBuilder(RoomBuilder roomBuilder) {
+	public void setRoomBuilder(IRoomBuilder roomBuilder) {
 		this.roomBuilder = roomBuilder;
 	}
 	

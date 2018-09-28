@@ -105,7 +105,7 @@ public class Room implements IRoom {
 	 * 
 	 * @param room
 	 */
-	public Room(Room room) {
+	public Room(IRoom room) {
 		if (room != null) {
 			setId(room.getId());
 			setAnchor(room.isAnchor());

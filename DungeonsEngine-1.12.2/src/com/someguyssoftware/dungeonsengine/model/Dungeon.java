@@ -13,12 +13,12 @@ import com.someguyssoftware.dungeonsengine.graph.Wayline;
  * @author Mark Gottschling on Jul 27, 2016
  *
  */
-public class Dungeon {
-
+public class Dungeon implements IDungeon {
+	private String name;
 	private IRoom entrance;
-	private List<Level> levels;
+	private List<ILevel> levels;
 	// TODO shafts needs to be indexed by levelIndex
-	private List<Wayline> shafts;
+	private List<Shaft> shafts;
 	private Integer minX, maxX;
 	private Integer minY, maxY;
 	private Integer minZ, maxZ;
@@ -43,17 +43,19 @@ public class Dungeon {
 		this.config = config;
 	}
 	
-	/**
-	 * @return the levels
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#getLevels()
 	 */
-	public List<Level> getLevels() {
+	@Override
+	public List<ILevel> getLevels() {
 		return levels;
 	}
 
-	/**
-	 * @param levels the levels to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#setLevels(java.util.List)
 	 */
-	public void setLevels(List<Level> levels) {
+	@Override
+	public void setLevels(List<ILevel> levels) {
 		this.levels = levels;
 	}
 
@@ -141,16 +143,18 @@ public class Dungeon {
 		this.maxZ = maxZ;
 	}
 
-	/**
-	 * @return the entrance
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#getEntrance()
 	 */
+	@Override
 	public IRoom getEntrance() {
 		return entrance;
 	}
 
-	/**
-	 * @param entrance the entrance to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#setEntrance(com.someguyssoftware.dungeonsengine.model.IRoom)
 	 */
+	@Override
 	public void setEntrance(IRoom entrance) {
 		this.entrance = entrance;
 	}
@@ -169,31 +173,51 @@ public class Dungeon {
 //		this.theme = theme;
 //	}
 
-	/**
-	 * @return the shafts
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#getShafts()
 	 */
-	public List<Wayline> getShafts() {
+	@Override
+	public List<Shaft> getShafts() {
 		return shafts;
 	}
 
 	/**
 	 * @param shafts the shafts to set
 	 */
-	public void setShafts(List<Wayline> shafts) {
+	@Override
+	public void setShafts(List<Shaft> shafts) {
 		this.shafts = shafts;
 	}
 
-	/**
-	 * @return the config
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#getConfig()
 	 */
+	@Override
 	public DungeonConfig getConfig() {
 		return config;
 	}
 
-	/**
-	 * @param config the config to set
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#setConfig(com.someguyssoftware.dungeonsengine.config.DungeonConfig)
 	 */
+	@Override
 	public void setConfig(DungeonConfig config) {
 		this.config = config;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#getName()
+	 */
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#setName(java.lang.String)
+	 */
+	@Override
+	public void setName(String name) {
+		this.name = name;
 	}
 }

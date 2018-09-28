@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.Map;
 
 import javax.swing.JPanel;
 
@@ -28,19 +29,23 @@ import net.minecraft.util.math.AxisAlignedBB;
 public class LevelPanel extends JPanel {
 	private ILevel level;
 	private LevelBuilder builder;
+	private Map<String, Object> props;
 	
 	public static int CANVAS_WIDTH = 850;
 	public static int CANVAS_HEIGHT = 650;
 	public static int CANVAS_START_X = 250;
 	public static int CANVAS_START_Y = 30;
 	
+	// TODO pass in a custom "config" object that contains all values used to generate the level
+	// can be a simple map of values
 	/**
 	 * 
 	 */
-	public LevelPanel(ILevel level, LevelBuilder builder) {
+	public LevelPanel(ILevel level, LevelBuilder builder, Map<String, Object> props) {
 		super();
 		this.level = level;
 		this.builder = builder;
+		this.props = props;
 	}
 
 	@Override
@@ -85,7 +90,7 @@ public class LevelPanel extends JPanel {
         g2d.fillRect(fieldStartX, fieldStartY, 	fieldWidth, fieldDepth);
 
         // normalize and center level field
-        AxisAlignedBB field = ((RoomBuilder)builder.getRoomBuilder()).getField();
+        AxisAlignedBB field = (AxisAlignedBB) props.get("roomField");
         width = (int) (field.maxX - field.minX);
         depth = (int) (field.maxZ - field.minZ);
         fieldWidth =  (int)(width * sizeMultiplier);

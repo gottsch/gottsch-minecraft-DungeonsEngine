@@ -7,9 +7,11 @@ import java.util.Random;
 
 import com.someguyssoftware.dungeonsengine.config.DungeonConfig;
 import com.someguyssoftware.dungeonsengine.model.Dungeon;
+import com.someguyssoftware.dungeonsengine.model.IDungeon;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 
 /**
@@ -18,7 +20,7 @@ import net.minecraft.world.World;
  */
 public interface IDungeonBuilder {
 
-	public Dungeon EMPTY_DUNGEON = new Dungeon();
+	public IDungeon EMPTY_DUNGEON = new Dungeon();
 
 	/**
 	 * 
@@ -28,24 +30,16 @@ public interface IDungeonBuilder {
 	 * @param config
 	 * @return
 	 */
-	Dungeon build(World world, Random rand, ICoords startPoint, DungeonConfig config);
+	IDungeon build(World world, Random rand, AxisAlignedBB field, ICoords startPoint, DungeonConfig config);
 
 	/**
 	 * @return the levelBuilder
 	 */
-	LevelBuilder getLevelBuilder();
+	ILevelBuilder getLevelBuilder();
 
 	/**
 	 * @param levelBuilder the levelBuilder to set
 	 */
-	void setLevelBuilder(LevelBuilder levelBuilder);
-
-	/**
-	 * @param world
-	 * @param rand
-	 * @param startPoint
-	 * @return
-	 */
-	IRoom buildEntranceRoom(World world, Random rand, ICoords startPoint);
+	void setLevelBuilder(ILevelBuilder levelBuilder);
 
 }
