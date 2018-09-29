@@ -26,7 +26,7 @@ import net.minecraft.util.math.AxisAlignedBB;
  */
 public class RoomBuilder implements IRoomBuilder {
 	public static Logger logger = LogManager.getLogger("DungeonsEngine");
-	public static final IRoom EMPTY_ROOM = new Room();
+	
 	public static final ICoords EMPTY_COORDS = new Coords(0, 0, 0);
 	
 //	private LevelConfig config;

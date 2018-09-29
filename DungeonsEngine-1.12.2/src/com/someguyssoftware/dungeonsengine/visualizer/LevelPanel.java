@@ -186,13 +186,15 @@ public class LevelPanel extends JPanel {
 //		}
         
 		// draw the wayliens
-		g2d.setColor(Color.BLUE);
-		for (Wayline w : builder.getWaylines()) {
-			g2d.drawLine(
-					fieldStartX + (int)(w.getPoint1().getX()*sizeMultiplier),
-							fieldStartY + (int)(w.getPoint1().getZ()*sizeMultiplier),
-					fieldStartX + (int)(w.getPoint2().getX()*sizeMultiplier),
-							fieldStartY + (int)(w.getPoint2().getZ()*sizeMultiplier));
-		}
+        if (builder.getWaylines() != null) {
+        	g2d.setColor(Color.BLUE);
+			for (Wayline w : builder.getWaylines()) {
+				g2d.drawLine(
+						fieldStartX + (int)(w.getPoint1().getX()*sizeMultiplier),
+								fieldStartY + (int)(w.getPoint1().getZ()*sizeMultiplier),
+						fieldStartX + (int)(w.getPoint2().getX()*sizeMultiplier),
+								fieldStartY + (int)(w.getPoint2().getZ()*sizeMultiplier));
+			}
+        }
 	}
 }

@@ -5,11 +5,14 @@ import java.util.Random;
 
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
+import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 
 import net.minecraft.util.math.AxisAlignedBB;
 
 public interface IRoomBuilder {
+	public static final IRoom EMPTY_ROOM = new Room();
+	
 	IRoom buildRoom(Random random, ICoords startPoint, LevelConfig config, IRoom roomIn);
 	/*
 	 * build a generic room

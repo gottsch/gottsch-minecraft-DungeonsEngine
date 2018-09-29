@@ -16,8 +16,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.someguyssoftware.dungeonsengine.builder.IRoomBuilder;
+import com.someguyssoftware.dungeonsengine.builder.ISurfaceRoomBuilder;
 import com.someguyssoftware.dungeonsengine.builder.LevelBuilder;
 import com.someguyssoftware.dungeonsengine.builder.RoomBuilder;
+import com.someguyssoftware.dungeonsengine.builder.SurfaceLevelBuilder;
+import com.someguyssoftware.dungeonsengine.builder.SurfaceRoomBuilder;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.model.ILevel;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
@@ -90,45 +93,57 @@ public class LevelVisualizer {
 						Math.min(roomField.maxZ+(d/3), levelField.maxZ)));
 		
 		// add the additional fields to the props map
+		props.put("seed",  new Long(seed));
 		props.put("roomField", roomField);
 		props.put("endField", endField);
 		
-		// test - add an extra planned room
-		List<IRoom> plannedRooms = new ArrayList<>();
+//		// test - add an extra planned room
+//		List<IRoom> plannedRooms = new ArrayList<>();
+//		
+//		IRoomBuilder roomBuilder = new RoomBuilder(roomField);		
+////		IRoomBuilder endRoomBuilder = new RoomBuilder(random, endField, startPoint, config);	
+//		LevelBuilder builder = new LevelBuilder(null, random, levelField, startPoint, config); // TODO require room builder in constructor
+//		builder.setRoomBuilder(roomBuilder);
+//		
+//		IRoom startRoom = roomBuilder.buildStartRoom(random, startPoint, config);
+////		Room extraRoom = new Room().setDegrees(3)
+////				.setDepth(10).setWidth(10).setAnchor(true)
+////				.setCoords(new Coords(startRoom.getCoords().getX(), 0, startRoom.getCoords().getZ() - 20))
+////				.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
+////		extraRoom.setDistance(extraRoom.getCenter().getDistanceSq(startPoint));
+//		
+//		plannedRooms.add(startRoom);
+////		plannedRooms.add(extraRoom);
+//		IRoom endRoom = roomBuilder.buildEndRoom(random, endField, startPoint, config, plannedRooms);//.setAnchor(false);
+//
+//		ILevel level = builder
+//			.withStartRoom(startRoom)
+//			.withEndRoom(endRoom)
+////			.withRoom(extraRoom)
+//			.build();		
+//		System.out.println(level);
+//		System.out.println(level.getField());
+//		logger.debug(level);
 		
-		IRoomBuilder roomBuilder = new RoomBuilder(roomField);		
-//		IRoomBuilder endRoomBuilder = new RoomBuilder(random, endField, startPoint, config);	
-		LevelBuilder builder = new LevelBuilder(null, random, levelField, startPoint, config); // TODO require room builder in constructor
-		builder.setRoomBuilder(roomBuilder);
-		
-		IRoom startRoom = roomBuilder.buildStartRoom(random, startPoint, config);
-//		Room extraRoom = new Room().setDegrees(3)
-//				.setDepth(10).setWidth(10).setAnchor(true)
-//				.setCoords(new Coords(startRoom.getCoords().getX(), 0, startRoom.getCoords().getZ() - 20))
-//				.setDirection(Direction.getByCode(RandomHelper.randomInt(2, 5)));
-//		extraRoom.setDistance(extraRoom.getCenter().getDistanceSq(startPoint));
-		
-		plannedRooms.add(startRoom);
-//		plannedRooms.add(extraRoom);
-		IRoom endRoom = roomBuilder.buildEndRoom(random, endField, startPoint, config, plannedRooms);//.setAnchor(false);
-
-		ILevel level = builder
-//			.withStartPoint(startPoint)		// TODO optional - get from room builder
-//			.withConfig(config)						// TODO optional - get from room builder
-//			.withField(levelField)					// TODO optional - get from room builder
-			.withStartRoom(startRoom)
-			.withEndRoom(endRoom)
-//			.withRoom(extraRoom)
-			.build();
-		
-		System.out.println(level);
-		System.out.println(level.getField());
-		logger.debug(level);
+		//======= Surface Builder ========
+		config.setNumberOfRooms(new Quantity(3, 5));
+		ISurfaceRoomBuilder sfRoomBuilder = new SurfaceRoomBuilder(null, roomField);
+		SurfaceLevelBuilder sfBuilder = new SurfaceLevelBuilder(null, random, levelField, startPoint);
+		sfBuilder.setConfig(config);
+		sfBuilder.setRoomBuilder((IRoomBuilder) sfRoomBuilder);
+		IRoom entranceRoom = sfRoomBuilder.buildEntranceRoom(random, startPoint, config);
+		ILevel sfLevel = sfBuilder
+				.withStartRoom(entranceRoom)
+				.build();		
+			System.out.println(sfLevel);
+			System.out.println(sfLevel.getField());
+			logger.debug(sfLevel);
 		
 		// visualize the level
 		// draw out rectangles
 		JFrame window = new JFrame();
-		JPanel panel = new LevelPanel(level, builder, props);
+//		JPanel panel = new LevelPanel(level, builder, props);
+		JPanel panel = new LevelPanel(sfLevel, sfBuilder, props);
 		window.setTitle("Dungeons2! Level Visualizer 2");
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setBounds(0, 0, 1400, 750);

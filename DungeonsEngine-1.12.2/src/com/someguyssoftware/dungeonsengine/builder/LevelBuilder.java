@@ -105,7 +105,9 @@ public class LevelBuilder implements ILevelBuilder {
 	public static final Shaft EMPTY_SHAFT = new Shaft();
 
 	private LevelConfig config;
+	
 	private World world;
+	
 	private Random random;
 
 	/*
@@ -157,16 +159,6 @@ public class LevelBuilder implements ILevelBuilder {
 	 * the bounding box in which the entire level must reside
 	 */
 	private AxisAlignedBB field;
-	
-	/*
-	 * field width
-	 */
-//	int fieldWidth;
-	
-	/*
-	 * field depth
-	 */
-//	int fieldDepth;
 	
 	/*
 	 * the min coords of the field
@@ -520,7 +512,7 @@ public class LevelBuilder implements ILevelBuilder {
 		// generate rooms
 		for (int i = 0; i < levelSize; i++) {
 			IRoom room = new Room(i);
-			room = roomBuilder.buildRoom(getRandom(), getStartPoint(), getConfig(), room);
+			room = getRoomBuilder().buildRoom(getRandom(), getStartPoint(), getConfig(), room);
 			if (room != RoomBuilder.EMPTY_ROOM) {
 				// add to the working list that contains all the rooms sorted on distance (farthest to closest)
 				rooms.add(room);
