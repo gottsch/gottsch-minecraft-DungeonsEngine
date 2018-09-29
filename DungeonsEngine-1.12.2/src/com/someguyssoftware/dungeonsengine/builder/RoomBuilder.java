@@ -27,6 +27,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 public class RoomBuilder implements IRoomBuilder {
 	public static Logger logger = LogManager.getLogger("DungeonsEngine");
 	public static final IRoom EMPTY_ROOM = new Room();
+	public static final ICoords EMPTY_COORDS = new Coords(0, 0, 0);
 	
 //	private LevelConfig config;
 //	private Random random;
@@ -63,7 +64,6 @@ public class RoomBuilder implements IRoomBuilder {
 	 * @return
 	 */
 	protected IRoom randomizeDimensions(Random random, AxisAlignedBB field, LevelConfig config, IRoom roomIn) {
-//		IRoom room = new Room(roomIn);
 		IRoom room = roomIn.copy();
 		room.setWidth(Math.max(IRoom.MIN_WIDTH, RandomHelper.randomInt(random, config.getWidth().getMinInt(), config.getWidth().getMaxInt())));
 		room.setDepth(Math.max(IRoom.MIN_DEPTH, RandomHelper.randomInt(random, config.getDepth().getMinInt(), config.getDepth().getMaxInt())));
@@ -98,6 +98,7 @@ public class RoomBuilder implements IRoomBuilder {
 		IRoom room = roomIn.copy();
 		// generate a ranom set of coords
 		ICoords c = randomizeCoords(random, field, config);
+		if (c == EMPTY_COORDS) return EMPTY_ROOM;
 		// center room using the random coords
 		room.setCoords(c.add(-(room.getWidth()/2), 0, -(room.getDepth()/2)));
 		return room;
@@ -124,9 +125,11 @@ public class RoomBuilder implements IRoomBuilder {
 	public IRoom buildRoom(Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config, IRoom roomIn) {
 		// randomize dimensions
 		IRoom room = randomizeDimensions(random, field, config, roomIn);
-
+		if (room == EMPTY_ROOM) return room;
+		
 		// randomize the rooms
 		room = randomizeRoomCoords(random, field, config, room);
+		if (room == EMPTY_ROOM) return room;
 		
 		// set the degrees (number of edges)
 		room.setDegrees(RandomHelper.randomInt(random, 
@@ -226,6 +229,7 @@ public class RoomBuilder implements IRoomBuilder {
 		checkingRooms:
 		do {
 			plannedRoom = buildRoom(random, field, startPoint, config, plannedRoom);
+			if (plannedRoom == EMPTY_ROOM) return plannedRoom;
 			logger.debug("New Planned Room:" + plannedRoom);
 			endCheckIndex++;
 			if (endCheckIndex > 10) {

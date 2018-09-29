@@ -92,8 +92,6 @@ public class LevelBuilder implements ILevelBuilder {
 	 * The coords that is used to calculate the force.
 	 */
 	private static final ICoords FORCE_SOURCE_COORDS = new Coords(0, 0, 0);
-
-	public static final IRoom EMPTY_ROOM = new Room();
 	
 	/*
 	 * empty level
@@ -523,8 +521,10 @@ public class LevelBuilder implements ILevelBuilder {
 		for (int i = 0; i < levelSize; i++) {
 			IRoom room = new Room(i);
 			room = roomBuilder.buildRoom(getRandom(), getStartPoint(), getConfig(), room);
-			// add to the working list that contains all the rooms sorted on distance (farthest to closest)
-			rooms.add(room);
+			if (room != RoomBuilder.EMPTY_ROOM) {
+				// add to the working list that contains all the rooms sorted on distance (farthest to closest)
+				rooms.add(room);
+			}
 		}
 		return rooms;
 	}
