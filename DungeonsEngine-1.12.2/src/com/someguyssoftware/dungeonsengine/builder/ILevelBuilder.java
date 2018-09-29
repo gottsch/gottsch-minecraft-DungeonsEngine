@@ -14,4 +14,7 @@ public interface ILevelBuilder {
 	LevelConfig getConfig();
 	void setConfig(LevelConfig config);
 
+	IRoomBuilder getRoomBuilder();
+	void setRoomBuilder(IRoomBuilder builder);
+
 }

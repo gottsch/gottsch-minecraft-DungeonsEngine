@@ -132,8 +132,6 @@ public class Room implements IRoom {
 				d.setRoom(this);
 				this.getDoors().add(d);
 			}
-			
-			// todo copy all the styling properties
 		}
 	}
 	
