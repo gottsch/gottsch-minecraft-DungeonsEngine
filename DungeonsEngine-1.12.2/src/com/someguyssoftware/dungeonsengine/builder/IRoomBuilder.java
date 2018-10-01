@@ -51,5 +51,24 @@ public interface IRoomBuilder {
 	AxisAlignedBB getField();
 	void setField(AxisAlignedBB field);
 	
-	// TODO build a treasure room
+	/**
+	 * 
+	 * @param random
+	 * @param startPoint
+	 * @param config
+	 * @param plannedRooms
+	 * @return
+	 */
+	IRoom buildTreasureRoom(Random random, ICoords startPoint, LevelConfig config, List<IRoom> plannedRooms);
+	/**
+	 * 
+	 * @param random
+	 * @param field
+	 * @param startPoint
+	 * @param config
+	 * @param plannedRooms
+	 * @return
+	 */
+	IRoom buildTreasureRoom(Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config, List<IRoom> plannedRooms);
+	
 }

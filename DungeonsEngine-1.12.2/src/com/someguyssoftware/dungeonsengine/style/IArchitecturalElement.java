@@ -1,4 +1,4 @@
-package com.someguyssoftware.dungeonsengine.model;
+package com.someguyssoftware.dungeonsengine.style;
 
 import com.someguyssoftware.dungeonsengine.enums.Face;
 

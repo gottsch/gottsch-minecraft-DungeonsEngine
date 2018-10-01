@@ -3,50 +3,65 @@
  */
 package com.someguyssoftware.dungeonsengine.style;
 
+import java.util.EnumSet;
+
+import com.someguyssoftware.dungeonsengine.model.Elements.ElementsEnum;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
+
 /**
  * @author Mark Gottschling on Sep 17, 2018
  *
  */
-public class DecoratedRoom {
-//
-//	private IRoom room;
-//	
-//	
-//	
-//	// ui / styling
-//	// TODO all these styling dont need to be assigned this until rendering phase.
-//	// TODO add RoomDecorations(Room) class.
+public class DecoratedRoom implements IDecoratedRoom {
+
+	private IRoom room;
+
+	private EnumSet<ElementsEnum> elements;
+	
+	/**
+	 * 
+	 * @param room
+	 */
+	public DecoratedRoom(IRoom room) {
+		this.elements = EnumSet.noneOf(ElementsEnum.class);
+		this.room = room;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.style.IDecoratedRoom#has(com.someguyssoftware.dungeonsengine.model.Elements.ElementsEnum)
+	 */
+	@Override
+	public boolean has(ElementsEnum element) {
+		return elements.contains(element);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.style.IDecoratedRoom#getRoom()
+	 */
+	@Override
+	public IRoom getRoom() {
+		return room;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.someguyssoftware.dungeonsengine.style.IDecoratedRoom#setRoom(com.someguyssoftware.dungeonsengine.model.IRoom)
+	 */
+	@Override
+	public void setRoom(IRoom room) {
+		this.room = room;
+	}
+	
+/*
+ * 	TODO maybe have a list that is a collection of elements that are set ie List<IArchitecturalElement> = {CROWN, TRIM, GUTTER}
+ * then a single method has(x) { return list.contains(x);} or hasCrown() {return list.contains(CROWN);}
+ */
+
 //	private Layout layout; 
-//	private boolean crown;
-//	private boolean trim;
-//	private boolean pilaster;	
-//	private boolean pillar;
-//	private boolean gutter;
-//	private boolean grate;
-//	private boolean coffer;
-//	
-//	private boolean wallBase;
-//	private boolean wallCapital;
-//	
-//	// TODO these next sets only belong to surface/exterior rooms and probably should be moved to a subclass
-//	private boolean cornice;
-//	private boolean plinth;	
-//	private boolean column;
-//	private boolean crenellation;
-//	private boolean parapet;
-//	private boolean merlon;
+
 //	
 //	// TODO this is a styling / decorating property, move to new class
 //	private Multimap<IArchitecturalElement, ICoords> floorMap;
-//	
-//	/**
-//	 * 
-//	 */
-//	public DecoratedRoom(IRoom room) {
-//		this.room = room;
-//	}
-//
-//	
+
 //	///////////
 //	/**
 //	 * @return the layout

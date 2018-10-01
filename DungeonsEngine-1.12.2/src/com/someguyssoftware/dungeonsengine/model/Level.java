@@ -38,7 +38,7 @@ public class Level implements ILevel {
 	 * @since 2.0
 	 */
 	private List<Hallway> hallways;
-	private List<Shaft> shafts;
+	private List<IShaft> shafts;
 	
 	private int minX, maxX;
 	private int minY, maxY;
@@ -335,7 +335,7 @@ public class Level implements ILevel {
 	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#getShafts()
 	 */
 	@Override
-	public List<Shaft> getShafts() {
+	public List<IShaft> getShafts() {
 		if (shafts == null) {
 			this.shafts = new ArrayList<>();
 		}
@@ -346,7 +346,7 @@ public class Level implements ILevel {
 	 * @see com.someguyssoftware.dungeonsengine.model.ILevel#setShafts(java.util.List)
 	 */
 	@Override
-	public void setShafts(List<Shaft> shafts) {
+	public void setShafts(List<IShaft> shafts) {
 		this.shafts = shafts;
 	}
 
@@ -457,6 +457,5 @@ public class Level implements ILevel {
 		return "Level [id=" + id + ", name=" + name + ", spawnPoint=" + spawnPoint + ", startPoint=" + startPoint + ", startRoom=" + startRoom + ", endRoom=" + endRoom + ", rooms=" + rooms
 				+ ", depth=" + getDepth() + ", width=" + getWidth() + ", field=" + field + ", hallways=" + hallways + ", shafts=" + shafts + ", minX=" + minX + ", maxX=" + maxX + ", minY=" + minY + ", maxY="
 				+ maxY + ", minZ=" + minZ + ", maxZ=" + maxZ + ", config=" + config + "]";
-	}
-	
+	}	
 }

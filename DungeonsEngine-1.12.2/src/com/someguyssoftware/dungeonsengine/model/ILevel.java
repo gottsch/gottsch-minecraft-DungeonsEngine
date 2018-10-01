@@ -154,12 +154,12 @@ public interface ILevel {
 	/**
 	 * @return the shafts
 	 */
-	List<Shaft> getShafts();
+	List<IShaft> getShafts();
 
 	/**
 	 * @param shafts the shafts to set
 	 */
-	void setShafts(List<Shaft> shafts);
+	void setShafts(List<IShaft> shafts);
 
 	List<Hallway> getHallways();
 

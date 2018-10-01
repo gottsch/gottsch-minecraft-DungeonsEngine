@@ -214,6 +214,32 @@ public class RoomBuilder implements IRoomBuilder {
 		return endRoom;
 	}
 	
+	/**
+	 * 
+	 */
+	@Override
+	public IRoom buildTreasureRoom(Random random, ICoords startPoint, LevelConfig config, List<IRoom> plannedRooms) {
+		return buildTreasureRoom(random, getField(), startPoint, config, plannedRooms);
+	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public IRoom buildTreasureRoom(Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config, List<IRoom> plannedRooms) {
+		final int ROOM_MIN_XZ = 10;
+		final int ROOM_MIN_Y = 10;
+		
+		IRoom room = buildEndRoom(random, startPoint, config, plannedRooms)
+				//.setType(Type.BOSS)
+				.setDegrees(1);	
+		// ensure min dimensions are met for start room
+		room.setWidth(Math.max(ROOM_MIN_XZ, room.getWidth()));
+		room.setDepth(Math.max(ROOM_MIN_XZ, room.getDepth()));
+		room.setHeight(Math.max(Math.min(ROOM_MIN_Y, config.getHeight().getMaxInt()),  room.getHeight()));
+		return room;
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.someguyssoftware.dungeonsengine.builder.IRoomBuilder#buildRoom(java.util.List)
 	 */

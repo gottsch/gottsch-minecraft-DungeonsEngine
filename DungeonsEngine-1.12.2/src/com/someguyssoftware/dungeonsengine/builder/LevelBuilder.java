@@ -98,12 +98,12 @@ public class LevelBuilder implements ILevelBuilder {
 	 */
 	public static final ILevel EMPTY_LEVEL = new Level();
 
-	public static final List<IRoom> EMPTY_ROOMS = new ArrayList<>();
+	public static final List<IRoom> EMPTY_ROOMS = new ArrayList<>(1);
 
-	public static final List<Wayline> EMPTY_WAYLINES = new ArrayList<>();
+	public static final List<Wayline> EMPTY_WAYLINES = new ArrayList<>(1);	
 
-	public static final Shaft EMPTY_SHAFT = new Shaft();
-
+	// TODO maybe wrap all these properties in a LevelArtifacts class, that way it is easy to reset
+	
 	private LevelConfig config;
 	
 	private World world;
@@ -197,6 +197,22 @@ public class LevelBuilder implements ILevelBuilder {
 	public LevelBuilder(World world, Random random, AxisAlignedBB field, ICoords startPoint, LevelConfig config) {
 		this(world, random, field, startPoint);
 		this.config = config;
+	}
+	
+	/**
+	 * reset/clear any state properties
+	 */
+	public void reset() {
+		this.plannedRooms.clear();
+		this.waylines.clear();
+		this.edges.clear();
+		this.paths.clear();
+		this.anchors.clear();
+		this.hallways.clear();
+		this.rooms.clear();
+		this.spawned.clear();
+		this.roomLossToDistanceBuffering = 0;
+		this.roomLossToValidation = 0;
 	}
 	
 	/**
@@ -785,6 +801,7 @@ public class LevelBuilder implements ILevelBuilder {
 	 * @param destLevel the destination level to join to.
 	 * @return
 	 */
+	@Override
 	public IShaft join(ILevel sourceLevel, ILevel destLevel) {
 		Shaft shaft = EMPTY_SHAFT;
 		
@@ -818,6 +835,7 @@ public class LevelBuilder implements ILevelBuilder {
 	 * @param destRoom
 	 * @return
 	 */
+	@Override
 	public Shaft join(IRoom sourceRoom, IRoom destRoom) {
 		Shaft shaft = EMPTY_SHAFT;
 		// built the shaft from start room (-1) to end room (+0)

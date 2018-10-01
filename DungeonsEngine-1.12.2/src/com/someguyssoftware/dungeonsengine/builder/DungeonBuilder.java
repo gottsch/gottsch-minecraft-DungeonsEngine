@@ -10,15 +10,12 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.someguyssoftware.dungeons2.Dungeons2;
-import com.someguyssoftware.dungeons2.builder.LevelBuilder;
-import com.someguyssoftware.dungeons2.model.Room.Type;
 import com.someguyssoftware.dungeonsengine.config.DungeonConfig;
-import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.model.Dungeon;
 import com.someguyssoftware.dungeonsengine.model.IDungeon;
 import com.someguyssoftware.dungeonsengine.model.ILevel;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
+import com.someguyssoftware.dungeonsengine.model.IShaft;
 import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 import com.someguyssoftware.gottschcore.random.RandomHelper;
@@ -35,7 +32,7 @@ public class DungeonBuilder implements IDungeonBuilder {
 	public static Logger logger = LogManager.getLogger("DungeonsEngine");
 	
 	private DungeonConfig config;
-	private ILevelBuilder surfaceLevelBuilder; // TODO how to manage all the level builders
+	private ILevelBuilder surfaceLevelBuilder; // TODO how to manage all the level builders - map?
 	private ILevelBuilder levelBuilder;
 	
 	/**
@@ -123,7 +120,7 @@ public class DungeonBuilder implements IDungeonBuilder {
 		logger.debug("number of levels -> {}", numberOfLevels);
 		
 		/*
-		 * main loop
+		 * > main loop <
 		 * build all the levels of dungeon and join them together
 		 */
 		for (int levelIndex = 0; levelIndex < numberOfLevels; levelIndex++) {
@@ -142,86 +139,85 @@ public class DungeonBuilder implements IDungeonBuilder {
 				if (!buildTopPlannedRooms(random, startPoint, surfaceLevel, getLevelBuilder(), plannedRooms)) {
 					return EMPTY_DUNGEON;
 				}
-//				// TODO buildTopPlannedRooms(random, field, startPoint, levelConfig, plannedRooms)
-//				logger.debug("TOP LEVEL");
-//				// TODO not sure if going to need this or not.... the dungeon/level field should be set, but what about the room field?
-//				// TODO build roomField according to level config
-//				AxisAlignedBB roomField = new AxisAlignedBB(startPoint.toPos()).grow(40);
-//				// build start centered at startPoint
-//				startRoom = getLevelBuilder().getRoomBuilder().buildStartRoom(random, roomField, startPoint, getLevelBuilder().getConfig());
-//				if (startRoom == IRoomBuilder.EMPTY_ROOM) {
-//					logger.warn("Unable to generate Top level Start Room.");
-//					return EMPTY_DUNGEON;					
-//				}
-//				// update to same direction as entrance
-//				startRoom.setDirection(surfaceLevel.getStartRoom().getDirection());
-//				logger.debug("top level start room -> {}", startRoom);
-//				
-//				// add to the planned rooms
-//				plannedRooms.add(startRoom);
-//				
-//				// build planned end room
-//				endRoom = getLevelBuilder().getRoomBuilder().buildEndRoom(random, roomField.grow(20), startPoint, getLevelBuilder().getConfig(), plannedRooms);
-//				if (endRoom == IRoomBuilder.EMPTY_ROOM) {
-//					logger.warn("unable to generate top level end room.");
-//					return EMPTY_DUNGEON;
-//				}
-//				plannedRooms.add(endRoom);			
 			}
 			else if (levelIndex == numberOfLevels - 1 || isBottomLevel) {	
-				// TODO buildBottomPlannedRooms(random, field, startPoint, levelConfig, plannedRooms)
-				logger.debug("BOTTOM LEVEL");
-				// build the start room by duplicating the previous level's end room
-				startRoom = new Room(dungeon.getLevels().get(levelIndex-1).getEndRoom());
-				if (startRoom == IRoomBuilder.EMPTY_ROOM) {
-					logger.warn("unable to generate bottom level start room");
+				if (!buildBottomPlannedRooms(random, startPoint, dungeon.getLevels().get(levelIndex-1), levelBuilder, plannedRooms)) {
 					return EMPTY_DUNGEON;
-				}
-				logger.debug("startPoint (bottom level): " + startPoint);
-				// update end room settings
-				startRoom.setCoords(startRoom.getCoords().resetY(startPoint.getY()));
-				startRoom.setAnchor(true).setStart(true).setEnd(false);			
-				plannedRooms.add(startRoom);
-				// build the end (boss/treasure) room
-				endRoom = getLevelBuilder().getRoomBuilder().buildBossRoom(random, startPoint, plannedRooms, getLevelBuilder().getConfig());
-				if (endRoom == IRoomBuilder.EMPTY_ROOM) {
-					logger.warn("unable to generate bottom level end room.");
-					return EMPTY_DUNGEON;
-				}
-				logger.debug("boss room (bottom level) -> {}", endRoom);
-				logger.debug("bossPoint (bottom level) @ {}", endRoom.getCoords().toShortString());
-				plannedRooms.add(endRoom);				
+				}		
 			}
 			else {
-				//TODO List<IRoom> = buildPlannedRooms(random, field, startPoint, levelConfig, plannedRooms)
-				logger.debug("building start room for level -> {}", levelIndex);
-				// TODO build roomField according to level config .. set into roombuilder, only call once per level
-				AxisAlignedBB roomField = new AxisAlignedBB(startPoint.toPos()).grow(40);
-				// 1. create start room from previous level end room
-				startRoom = new Room(dungeon.getLevels().get(levelIndex-1).getEndRoom());
-				if (startRoom == IRoomBuilder.EMPTY_ROOM) {
-					logger.warn("unable to generate level start room -> {}", levelIndex);
+				if (!buildPlannedRooms(random, startPoint, dungeon.getLevels().get(levelIndex-1), levelBuilder, plannedRooms)) {
 					return EMPTY_DUNGEON;
 				}
-				// update end room settings
-				startRoom.setCoords(startRoom.getCoords().resetY(startPoint.getY()));
-				startRoom.setAnchor(true).setStart(true).setEnd(false);
-				plannedRooms.add(startRoom);
-				logger.debug("level start room -> {}", startRoom);
-
-				// 2. create end room
-				endRoom = getLevelBuilder().getRoomBuilder().buildPlannedRoom(random, roomField, startPoint, getLevelBuilder().getConfig(), plannedRooms);
-				if (endRoom == IRoomBuilder.EMPTY_ROOM) {
-					logger.warn("unable to generate level end room -> {}", levelIndex);
-					return EMPTY_DUNGEON;
-				}
-				endRoom.setAnchor(true).setStart(false).setEnd(true);//.setType(Type.LADDER);
-				plannedRooms.add(endRoom);	
 			}
+			
+			// clear the level builder
+			getLevelBuilder().reset();
+			
+			// build a level
+			for (IRoom r : plannedRooms) {
+				getLevelBuilder().withRoom(r);
+			}
+			ILevel level = levelBuilder.build();
+			if (level == LevelBuilder.EMPTY_LEVEL)
+				return EMPTY_DUNGEON;
+			
+			/*
+			 * add level to dungeon
+			 */
+			dungeon.getLevels().add(level);
+			
+			// build and add the shaft to the level
+			if (levelIndex > 0) {
+				logger.debug("Joing levels " + (levelIndex-1) + " to " + levelIndex);
+				getLevelBuilder();
+				if (levelBuilder.join(level, dungeon.getLevels().get(levelIndex-1)) == ILevelBuilder.EMPTY_SHAFT) {
+					logger.warn("levels don't require joining -> {} to {}", levelIndex, (levelIndex-1));
+				}
+			}
+			// TODO why do we need these values
+			// update the min/max values for the dungeon
+//			if (dungeon.getMinX() == null || level.getMinX() < dungeon.getMinX()) dungeon.setMinX(level.getMinX());
+//			if (dungeon.getMaxX() == null || level.getMaxX() > dungeon.getMaxX()) dungeon.setMaxX(level.getMaxX());
+//			if (dungeon.getMinY() == null || level.getMinY() < dungeon.getMinY()) dungeon.setMinY(level.getMinY());
+//			if (dungeon.getMaxY() == null || level.getMaxY() > dungeon.getMaxY()) dungeon.setMaxY(level.getMaxY());
+//			if (dungeon.getMinZ() == null || level.getMinZ() < dungeon.getMinZ()) dungeon.setMinZ(level.getMinZ());
+//			if (dungeon.getMaxZ() == null || level.getMaxZ() > dungeon.getMaxZ()) dungeon.setMaxZ(level.getMaxZ());
+			
+			// clear planned rooms
+			plannedRooms.clear();
+			
+			// hard break if bottom level
+			if (isBottomLevel) {
+				logger.debug("At bottom level... break...");
+				break;
+			}
+			
+			// update the start point to below the previous level's end room
+			startPoint = endRoom.getBottomCenter();
+//			startPoint = startPoint.resetY(dungeon.getMinY() - (int)levelConfig.getHeight().getMax());
 			
 			// end of main loop
 		}
 		
+		/*
+		 * join the entrance to the dungeon
+		 */
+		logger.debug("joining shaft from entrance to start room...");
+		logger.debug("start room -> {}", dungeon.getLevels().get(0).getStartRoom());
+		logger.debug("entrance room -> {}", surfaceLevel.getStartRoom());
+		// join the top start room with the entrance room
+		IShaft shaft = levelBuilder.join(dungeon.getLevels().get(0).getStartRoom(), surfaceLevel.getStartRoom());
+		if (shaft == ILevelBuilder.EMPTY_SHAFT) {
+			logger.debug("unable to join start room to entrance room");
+		}
+		
+		logger.debug("adding shaft to shaft list...");
+		logger.debug("dungeon level[0] -> {}", dungeon.getLevels().get(0));
+		// add shaft to the top level
+		dungeon.getLevels().get(0).getShafts().add(shaft);
+		
+		// return the dungeon
 		return dungeon;
 	}
 
@@ -263,6 +259,75 @@ public class DungeonBuilder implements IDungeonBuilder {
 		return true;
 	}
 
+	/**
+	 * 
+	 * @param random
+	 * @param startPoint
+	 * @param previousLevel
+	 * @param levelBuilder
+	 * @param plannedRooms
+	 * @return
+	 */
+	private boolean buildBottomPlannedRooms(Random random, ICoords startPoint, ILevel previousLevel, ILevelBuilder levelBuilder, List<IRoom> plannedRooms) {
+		logger.debug("BOTTOM LEVEL");
+		// build the start room by duplicating the previous level's end room
+		IRoom startRoom = previousLevel.getEndRoom();
+		if (startRoom == IRoomBuilder.EMPTY_ROOM) {
+			logger.warn("unable to generate bottom level start room");
+			return false;
+		}
+		logger.debug("startPoint (bottom level) -> {}", startPoint);
+		// update end room settings
+		startRoom.setCoords(startRoom.getCoords().resetY(startPoint.getY()));
+		startRoom.setAnchor(true).setStart(true).setEnd(false);		
+		// add to the planned rooms
+		plannedRooms.add(startRoom);
+		// build the end (boss/treasure) room
+		IRoom endRoom = getLevelBuilder().getRoomBuilder().buildTreasureRoom(random, startPoint, getLevelBuilder().getConfig(), plannedRooms);
+		if (endRoom == IRoomBuilder.EMPTY_ROOM) {
+			logger.warn("unable to generate bottom level end room.");
+			return false;
+		}
+		logger.debug("boss room (bottom level) -> {}", endRoom);
+		logger.debug("bossPoint (bottom level) @ {}", endRoom.getCoords().toShortString());
+		plannedRooms.add(endRoom);				
+		
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param random
+	 * @param startPoint
+	 * @param previousLevel
+	 * @param levelBuilder
+	 * @param plannedRooms
+	 * @return
+	 */
+	private boolean buildPlannedRooms(Random random, ICoords startPoint, ILevel previousLevel, ILevelBuilder levelBuilder, List<IRoom> plannedRooms) {
+		// 1. create start room from previous level end room
+		IRoom startRoom = new Room(previousLevel.getEndRoom());
+		if (startRoom == IRoomBuilder.EMPTY_ROOM) {
+			logger.warn("unable to generate level start room.");
+			return false;
+		}
+		// update end room settings
+		startRoom.setCoords(startRoom.getCoords().resetY(startPoint.getY()));
+		startRoom.setAnchor(true).setStart(true).setEnd(false);
+		plannedRooms.add(startRoom);
+		logger.debug("level start room -> {}", startRoom);
+
+		// 2. create end room
+		IRoom endRoom = getLevelBuilder().getRoomBuilder().buildPlannedRoom(random, getLevelBuilder().getRoomBuilder().getField().grow(20), startPoint, getLevelBuilder().getConfig(), plannedRooms);
+		if (endRoom == IRoomBuilder.EMPTY_ROOM) {
+			logger.warn("unable to generate level end room.");
+			return false;
+		}
+		endRoom.setAnchor(true).setStart(false).setEnd(true);//.setType(Type.LADDER);
+		plannedRooms.add(endRoom);	
+		return true;
+	}
+	
 	/**
 	 * 
 	 * @param world

@@ -3,6 +3,8 @@
  */
 package com.someguyssoftware.dungeonsengine.model;
 
+import com.someguyssoftware.dungeonsengine.style.IArchitecturalElement;
+
 /**
  * @author Mark Gottschling on Aug 19, 2018
  *
@@ -34,7 +36,7 @@ public class Elements {
 	 * @author Mark Gottschling on Aug 19, 2018
 	 *
 	 */
-	private enum ElementsEnum {
+	public enum ElementsEnum {
 		AIR(0, Elements.AIR),
 		FLOOR(1, Elements.FLOOR),
 		WALL(2, Elements.WALL),
