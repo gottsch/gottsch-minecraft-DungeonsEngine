@@ -17,9 +17,6 @@ import net.minecraft.util.math.MathHelper;
  *
  */
 public class Room implements IRoom {
-//	public static final int MIN_DEPTH = 5;
-//	public static final int MIN_WIDTH = 5;
-//	public static final int MIN_HEIGHT = 4;
 	
 	private int id;
 	private String name;
@@ -174,38 +171,7 @@ public class Room implements IRoom {
     public static EnumFacing getHorizontal(int direction) {
         return EnumFacing.HORIZONTALS[MathHelper.abs(direction % EnumFacing.HORIZONTALS.length)];
     }
-    
-//	public int getMinX() {
-//		return this.getCoords().getX();
-//	}
-//	
-//	public int getMaxX() {
-//		return this.getCoords().getX() + this.getWidth() - 1;
-//	}
-//	
-//	public int getMinY() {
-//		return this.getCoords().getY();
-//	}
-//	
-//	public int getMaxY() {
-//		return this.getCoords().getY() + this.getHeight() - 1;
-//	}
-//	
-//	/**
-//	 * 
-//	 * @return
-//	 */
-//	public int getMinZ() {
-//		return this.getCoords().getZ();
-//	}
-//	
-//	/**
-//	 * 
-//	 * @return
-//	 */
-//	public int getMaxZ() {
-//		return this.getCoords().getZ() + this.getDepth() - 1;
-//	}
+
 	
 //	/**
 //	 * Returns a new Room with the force applied at the angle on the XZ plane.

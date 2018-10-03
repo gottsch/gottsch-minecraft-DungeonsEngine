@@ -10,6 +10,7 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.someguyssoftware.dungeonsengine.block.NullBlock;
 import com.someguyssoftware.dungeonsengine.config.DungeonConfig;
 import com.someguyssoftware.dungeonsengine.model.Dungeon;
 import com.someguyssoftware.dungeonsengine.model.IDungeon;
@@ -17,10 +18,12 @@ import com.someguyssoftware.dungeonsengine.model.ILevel;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.IShaft;
 import com.someguyssoftware.dungeonsengine.model.Room;
+import com.someguyssoftware.gottschcore.mod.IMod;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 import com.someguyssoftware.gottschcore.random.RandomHelper;
 import com.someguyssoftware.gottschcore.world.WorldInfo;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 
@@ -31,6 +34,9 @@ import net.minecraft.world.World;
 public class DungeonBuilder implements IDungeonBuilder {
 	public static Logger logger = LogManager.getLogger("DungeonsEngine");
 	
+	public static String NULL_BLOCK_NAME = "null";
+	public static IBlockState NULL_BLOCK;
+	
 	private DungeonConfig config;
 	private ILevelBuilder surfaceLevelBuilder; // TODO how to manage all the level builders - map?
 	private ILevelBuilder levelBuilder;
@@ -38,7 +44,8 @@ public class DungeonBuilder implements IDungeonBuilder {
 	/**
 	 * 
 	 */
-	public DungeonBuilder() {
+	public DungeonBuilder(IMod mod) {
+		NULL_BLOCK = new NullBlock(mod.getId()).getDefaultState();
 	}
 
 	/**
@@ -47,7 +54,8 @@ public class DungeonBuilder implements IDungeonBuilder {
 	 * @param levelBuilder
 	 * @param config
 	 */
-	public DungeonBuilder(SurfaceLevelBuilder surfaceBuilder, LevelBuilder levelBuilder, DungeonConfig config) {
+	public DungeonBuilder(IMod mod, SurfaceLevelBuilder surfaceBuilder, LevelBuilder levelBuilder, DungeonConfig config) {
+		this(mod);
 		this.surfaceLevelBuilder = surfaceBuilder;
 		this.levelBuilder = levelBuilder;
 		this.config = config;

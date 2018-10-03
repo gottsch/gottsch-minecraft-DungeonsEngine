@@ -17,22 +17,12 @@ public interface IArchitecturalElement {
 	/**
 	 * @return the hasHorizontalSupport
 	 */
-	boolean isHasHorizontalSupport();
-
-	/**
-	 * @param hasHorizontalSupport the hasHorizontalSupport to set
-	 */
-	void setHasHorizontalSupport(boolean hasHorizontalSupport);
+	boolean hasHorizontalSupport();
 
 	/**
 	 * @return the hasVerticalSupport
 	 */
-	boolean isHasVerticalSupport();
-
-	/**
-	 * @param hasVerticalSupport the hasVerticalSupport to set
-	 */
-	void setHasVerticalSupport(boolean hasVerticalSupport);
+	boolean hasVerticalSupport();
 
 	/**
 	 * @return the horizontalSupport

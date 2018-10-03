@@ -12,10 +12,8 @@ import com.someguyssoftware.dungeonsengine.enums.Face;
 public class ArchitecturalElement implements IArchitecturalElement {
 
 	private String name;
-	private boolean hasHorizontalSupport; // TODO should this be a property or just a method ?
-	private boolean hasVerticalSupport;
-	private double horizontalSupport;
-	private double verticalSupport;
+	private double horizontalSupport = -1D;
+	private double verticalSupport = -1D;
 	private Face face;
 	private IArchitecturalElement base;
 	
@@ -24,6 +22,48 @@ public class ArchitecturalElement implements IArchitecturalElement {
 	 */
 	public ArchitecturalElement() {
 		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * 
+	 * @param name
+	 * @param vSupport
+	 * @param hSupport
+	 */
+	public ArchitecturalElement(String name, double vSupport, double hSupport) {
+		this.name = name;
+		this.verticalSupport = vSupport;
+		this.horizontalSupport = hSupport;
+	}
+	
+	/**
+	 * 
+	 * @param name
+	 * @param vSupport
+	 * @param hSupport
+	 * @param face
+	 * @param base
+	 */
+	public ArchitecturalElement(String name, double vSupport, double hSupport, Face face, IArchitecturalElement base) {
+		this.name = name;
+		this.horizontalSupport = hSupport;
+		this.verticalSupport = vSupport;
+		this.face = face;
+		this.base = base;
+	}
+	
+	/**
+	 * 
+	 * @param name
+	 * @param hSupport
+	 * @param vSupport
+	 * @param base
+	 */
+	public ArchitecturalElement(String name, double hSupport, double vSupport, IArchitecturalElement base) {
+		this.name = name;
+		this.horizontalSupport = hSupport;
+		this.verticalSupport = vSupport;
+		this.base = base;
 	}
 
 	/* (non-Javadoc)
@@ -46,32 +86,19 @@ public class ArchitecturalElement implements IArchitecturalElement {
 	 * @see com.someguyssoftware.dungeonsengine.model.IArchitecturalElement#isHasHorizontalSupport()
 	 */
 	@Override
-	public boolean isHasHorizontalSupport() {
-		return hasHorizontalSupport;
+	public boolean hasHorizontalSupport() {
+		if (getHorizontalSupport() > 0D) return true;
+		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.someguyssoftware.dungeonsengine.model.IArchitecturalElement#setHasHorizontalSupport(boolean)
-	 */
-	@Override
-	public void setHasHorizontalSupport(boolean hasHorizontalSupport) {
-		this.hasHorizontalSupport = hasHorizontalSupport;
-	}
 
 	/* (non-Javadoc)
 	 * @see com.someguyssoftware.dungeonsengine.model.IArchitecturalElement#isHasVerticalSupport()
 	 */
 	@Override
-	public boolean isHasVerticalSupport() {
-		return hasVerticalSupport;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.someguyssoftware.dungeonsengine.model.IArchitecturalElement#setHasVerticalSupport(boolean)
-	 */
-	@Override
-	public void setHasVerticalSupport(boolean hasVerticalSupport) {
-		this.hasVerticalSupport = hasVerticalSupport;
+	public boolean hasVerticalSupport() {
+		if (getVerticalSupport() > 0D) return true;
+		return false;
 	}
 
 	/* (non-Javadoc)

@@ -5,8 +5,11 @@ package com.someguyssoftware.dungeonsengine.style;
 
 import java.util.EnumSet;
 
+import com.google.common.collect.Multimap;
+import com.someguyssoftware.dungeonsengine.generator.Location;
 import com.someguyssoftware.dungeonsengine.model.Elements.ElementsEnum;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
+import com.someguyssoftware.gottschcore.positional.ICoords;
 
 /**
  * @author Mark Gottschling on Sep 17, 2018
@@ -15,8 +18,10 @@ import com.someguyssoftware.dungeonsengine.model.IRoom;
 public class DecoratedRoom implements IDecoratedRoom {
 
 	private IRoom room;
+	private Layout layout;
 
 	private EnumSet<ElementsEnum> elements;
+	private Multimap<IArchitecturalElement, ICoords> floorMap;
 	
 	/**
 	 * 
@@ -35,6 +40,50 @@ public class DecoratedRoom implements IDecoratedRoom {
 		return elements.contains(element);
 	}
 	
+	@Override
+	public boolean has(ElementsEnum element, ElementsEnum...extras) {
+		if (elements.contains(element)) return true;
+		for (ElementsEnum e : extras) {
+			if (elements.contains(e)) return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param coords
+	 * @return
+	 */
+	@Override
+	public Location getLocation(ICoords coords) {
+		ICoords center = getRoom().getCenter();
+		int zDiff = 0;
+		int xDiff = 0;
+		int x = coords.getX();
+		int y = coords.getY();
+		int z = coords.getZ();
+		
+		if (z < center.getZ()) {
+			zDiff = z - getRoom().getMinZ();
+			if(x >= (room.getMinX() + zDiff) && x <= (room.getMaxX() - zDiff)) return Location.NORTH_SIDE;
+		}
+		
+		if (z > center.getZ()) {
+			zDiff = room.getMaxZ() - z;
+			if (x >= (room.getMinX() + zDiff) && x <= (room.getMaxX() - zDiff)) return Location.SOUTH_SIDE;
+		}
+
+		if (x < center.getX()) {
+			xDiff = x - room.getMinX();
+			if (z >= (room.getMinZ() + xDiff) && z <= (room.getMaxZ() - xDiff)) return Location.WEST_SIDE;
+		} 
+		if (x > center.getX()) {
+			xDiff = room.getMaxX() - x;
+			if (z >= (room.getMinZ() + xDiff) && z <= (room.getMaxZ() - xDiff)) return Location.EAST_SIDE;
+		}
+		return Location.MIDDLE;	
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.someguyssoftware.dungeonsengine.style.IDecoratedRoom#getRoom()
 	 */
@@ -49,6 +98,35 @@ public class DecoratedRoom implements IDecoratedRoom {
 	@Override
 	public void setRoom(IRoom room) {
 		this.room = room;
+	}
+
+	/**
+	 * @return the layout
+	 */
+	public Layout getLayout() {
+		return layout;
+	}
+
+	/**
+	 * @param layout the layout to set
+	 */
+	public void setLayout(Layout layout) {
+		this.layout = layout;
+	}
+
+	/**
+	 * @return the floorMap
+	 */
+	@Override
+	public Multimap<IArchitecturalElement, ICoords> getFloorMap() {
+		return floorMap;
+	}
+
+	/**
+	 * @param floorMap the floorMap to set
+	 */
+	public void setFloorMap(Multimap<IArchitecturalElement, ICoords> floorMap) {
+		this.floorMap = floorMap;
 	}
 	
 /*

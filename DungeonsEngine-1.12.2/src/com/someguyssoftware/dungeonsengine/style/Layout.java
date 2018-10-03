@@ -3,11 +3,8 @@
  */
 package com.someguyssoftware.dungeonsengine.style;
 
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Mark Gottschling on Jul 30, 2016
