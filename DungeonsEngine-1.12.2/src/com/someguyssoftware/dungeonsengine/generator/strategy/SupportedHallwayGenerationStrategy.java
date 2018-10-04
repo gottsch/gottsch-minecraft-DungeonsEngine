@@ -16,10 +16,10 @@ import com.someguyssoftware.dungeonsengine.generator.Arrangement;
 import com.someguyssoftware.dungeonsengine.generator.ISupportedBlock;
 import com.someguyssoftware.dungeonsengine.generator.SupportedBlock;
 import com.someguyssoftware.dungeonsengine.generator.SupportedBlockProcessor;
+import com.someguyssoftware.dungeonsengine.generator.blockprovider.IDungeonsBlockProvider;
 import com.someguyssoftware.dungeonsengine.model.Elements;
 import com.someguyssoftware.dungeonsengine.model.IHallway;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
-import com.someguyssoftware.dungeonsengine.model.Room;
 import com.someguyssoftware.dungeonsengine.style.IArchitecturalElement;
 import com.someguyssoftware.dungeonsengine.style.IDecoratedRoom;
 import com.someguyssoftware.dungeonsengine.style.StyleSheet;
@@ -74,7 +74,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 		ISupportedBlock supportedBlock = null;
 		
 		// collect a list of rooms that the hallway intersects against
-		List<Room> intersectRooms = new ArrayList<>();
+		List<IDecoratedRoom> intersectRooms = new ArrayList<>();
 		for (IDecoratedRoom otherRoom : getRooms()) {
 			if (room.getBoundingBox().intersects(otherRoom.getBoundingBox())) {
 				intersectRooms.add(otherRoom);
@@ -102,7 +102,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 					blockState = getBlockProvider().getBlockState(random, worldCoords, room, arrangement, theme, styleSheet, config);
 
 					// update support calculations for air
-					if (blockState == null || arrangement.getElement() == Elements.AIR || blockState == Blocks.AIR.getDefaultState() || blockState == IDungeonsBlockProvider.NULL_BLOCK) {
+					if (blockState == null || arrangement.getElement() == Elements.AIR || blockState == Blocks.AIR.getDefaultState() || blockState == DungeonBuilder.NULL_BLOCK) {
 						// create a supported block instance
 						supportedBlock = new SupportedBlock(blockState, 100); // 100 = the block as been processed and is in the world
 						// update the world with the blockState
@@ -209,7 +209,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 	 * @param intersectRooms
 	 * @return
 	 */
-	public boolean isBlockBuildable(ICoords worldCoords, IHallway hallway, List<Room> intersectRooms) {
+	public boolean isBlockBuildable(ICoords worldCoords, IHallway hallway, List<IDecoratedRoom> intersectRooms) {
 		// NOTE we already know at this point that the design element is not AIR				
 		AxisAlignedBB box = new AxisAlignedBB(worldCoords.toPos());
 		boolean buildBlock = true;						
@@ -228,7 +228,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 
 		// second, check against any rooms in the level that the hallway intersects with
 		if (buildBlock) {
-			for (Room r : intersectRooms) {
+			for (IDecoratedRoom r : intersectRooms) {
 				AxisAlignedBB bb = r.getBoundingBox();
 				if (box.intersects(bb)) {
 					buildBlock = false;

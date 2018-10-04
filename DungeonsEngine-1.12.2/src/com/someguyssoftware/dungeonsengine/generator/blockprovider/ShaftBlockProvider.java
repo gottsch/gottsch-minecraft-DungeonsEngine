@@ -3,24 +3,34 @@
  */
 package com.someguyssoftware.dungeonsengine.generator.blockprovider;
 
-import com.someguyssoftware.dungeons2.model.Room;
-import com.someguyssoftware.dungeons2.style.DesignElement;
-import com.someguyssoftware.dungeons2.style.Layout;
+import com.someguyssoftware.dungeonsengine.model.Elements;
+import com.someguyssoftware.dungeonsengine.style.IArchitecturalElement;
+import com.someguyssoftware.dungeonsengine.style.IDecoratedRoom;
+import com.someguyssoftware.dungeonsengine.style.Layout;
+import com.someguyssoftware.dungeonsengine.style.StyleSheet;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 
 /**
  * @author Mark Gottschling on Aug 27, 2016
  *
  */
-public class ShaftBlockProvider implements IExteriorDungeonsBlockProvider {
+public class ShaftBlockProvider extends AbstractBlockProvider {
 	
+	/**
+	 * 
+	 * @param sheet
+	 */
+	public ShaftBlockProvider(StyleSheet sheet) {
+		super(sheet);
+	}
+
 	/**
 	 * 
 	 */
 	@Override
-	public DesignElement getDesignElement(ICoords coords, Room room, Layout layout) {
-		if (isLadderElement(coords, room, layout)) return DesignElement.LADDER;	
-		return DesignElement.WALL;
+	public IArchitecturalElement getArchitecturalElement(ICoords coords, IDecoratedRoom room, Layout layout) {
+		if (isLadderElement(coords, room, layout)) return Elements.LADDER;	
+		return Elements.WALL;
 	}
 
 	/**
@@ -33,7 +43,7 @@ public class ShaftBlockProvider implements IExteriorDungeonsBlockProvider {
 	 * @return
 	 */
 	@Override
-	public boolean isLadderElement(ICoords coords, Room room, Layout layout) {
+	public boolean isLadderElement(ICoords coords, IDecoratedRoom room, Layout layout) {
 		ICoords center = room.getCenter();
 		if (coords.getX() == center.getX() && coords.getZ() == (center.getZ()) ) return true;
 		return false;

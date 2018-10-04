@@ -4,6 +4,9 @@ import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.gottschcore.enums.Direction;
 import com.someguyssoftware.gottschcore.positional.Coords;
 import com.someguyssoftware.gottschcore.positional.ICoords;
+
+import net.minecraft.util.math.AxisAlignedBB;
+
 import com.google.common.collect.Multimap;
 import com.someguyssoftware.dungeonsengine.generator.Location;
 import com.someguyssoftware.dungeonsengine.model.Elements.ElementsEnum;
@@ -141,6 +144,10 @@ public interface IDecoratedRoom {
 	}
 
 	Multimap<IArchitecturalElement, ICoords> getFloorMap();
+
+	default public AxisAlignedBB getBoundingBox() {
+		return this.getRoom().getBoundingBox();
+	}
 
 
 

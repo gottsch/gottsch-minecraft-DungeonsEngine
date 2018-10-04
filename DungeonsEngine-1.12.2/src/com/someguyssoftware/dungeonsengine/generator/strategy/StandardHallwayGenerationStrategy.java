@@ -10,15 +10,17 @@ import java.util.Map;
 import java.util.Random;
 
 import com.google.common.collect.Multimap;
-import com.someguyssoftware.dungeons2.generator.AbstractRoomGenerationStrategy;
-import com.someguyssoftware.dungeons2.generator.Arrangement;
-import com.someguyssoftware.dungeons2.generator.blockprovider.IDungeonsBlockProvider;
-import com.someguyssoftware.dungeons2.model.Hallway;
-import com.someguyssoftware.dungeons2.model.LevelConfig;
-import com.someguyssoftware.dungeons2.model.Room;
-import com.someguyssoftware.dungeons2.style.DesignElement;
-import com.someguyssoftware.dungeons2.style.StyleSheet;
-import com.someguyssoftware.dungeons2.style.Theme;
+import com.someguyssoftware.dungeonsengine.builder.DungeonBuilder;
+import com.someguyssoftware.dungeonsengine.config.LevelConfig;
+import com.someguyssoftware.dungeonsengine.generator.Arrangement;
+import com.someguyssoftware.dungeonsengine.generator.blockprovider.IDungeonsBlockProvider;
+import com.someguyssoftware.dungeonsengine.model.Elements;
+import com.someguyssoftware.dungeonsengine.model.IHallway;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
+import com.someguyssoftware.dungeonsengine.style.IArchitecturalElement;
+import com.someguyssoftware.dungeonsengine.style.IDecoratedRoom;
+import com.someguyssoftware.dungeonsengine.style.StyleSheet;
+import com.someguyssoftware.dungeonsengine.style.Theme;
 import com.someguyssoftware.gottschcore.positional.Coords;
 import com.someguyssoftware.gottschcore.positional.ICoords;
 
@@ -35,12 +37,12 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 	/*
 	 * a list of all the rooms in the level 
 	 */
-	private List<Room> rooms;
+	private List<IDecoratedRoom> rooms;
 	
 	/*
 	 * a list of generated hallways
 	 */
-	private List<Hallway> hallways;
+	private List<IHallway> hallways;
 		
 //	/**
 //	 * 
@@ -56,7 +58,7 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 	 * @param rooms
 	 * @param hallways
 	 */
-	public StandardHallwayGenerationStrategy(IDungeonsBlockProvider blockProvider, List<Room> rooms, List<Hallway> hallways) {
+	public StandardHallwayGenerationStrategy(IDungeonsBlockProvider blockProvider, List<IDecoratedRoom> rooms, List<IHallway> hallways) {
 		super(blockProvider);
 		//		setBlockProvider(blockProvider);
 		setRooms(rooms);
@@ -67,16 +69,16 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 	 * 
 	 */
 	@Override
-	public void generate(World world, Random random, Room room, Theme theme, StyleSheet styleSheet, LevelConfig config) {
-		Hallway hallway = (Hallway)room;
+	public void generate(World world, Random random, IDecoratedRoom room, Theme theme, StyleSheet styleSheet, LevelConfig config) {
+		IHallway hallway = (IHallway)room;
 		IBlockState blockState = null;
 		Map<ICoords, Arrangement> postProcessMap = new HashMap<>();
-		Multimap<DesignElement, ICoords> blueprint = room.getFloorMap();
+		Multimap<IArchitecturalElement, ICoords> blueprint = room.getFloorMap();
 		
 		// collect a list of rooms that the hallway intersects against
-		List<Room> intersectRooms = new ArrayList<>();
-		for (Room otherRoom : getRooms()) {
-			if (hallway.getBoundingBox().intersects(otherRoom.getBoundingBox())) {
+		List<IDecoratedRoom> intersectRooms = new ArrayList<>();
+		for (IDecoratedRoom otherRoom : getRooms()) {
+			if (((IRoom)hallway).getBoundingBox().intersects(otherRoom.getBoundingBox())) {
 //				Dungeons2.log.debug("Hallway intersects with Room: " + room);
 				intersectRooms.add(otherRoom);
 			}
@@ -101,11 +103,11 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 					
 					// get the block state
 					blockState = getBlockProvider().getBlockState(random, worldCoords, room, arrangement, theme, styleSheet, config);
-					if (blockState == IDungeonsBlockProvider.NULL_BLOCK) continue;
+					if (blockState == DungeonBuilder.NULL_BLOCK) continue;
 					
 					AxisAlignedBB box = new AxisAlignedBB(worldCoords.toPos());
 					boolean buildBlock = true;
-					if (arrangement.getElement() != DesignElement.AIR) {
+					if (arrangement.getElement() != Elements.AIR) {
 						// get the bounding boxes of the rooms the doors are connected to
 						// NOTE may have to change to list in the future if more than 2 doors per hall
 						AxisAlignedBB bb1 = hallway.getDoors().size() > 0 &&
@@ -120,7 +122,7 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 						
 						// second, check against any rooms in the level that the hallway intersects with
 						if (buildBlock) {
-							for (Room r : intersectRooms) {
+							for (IDecoratedRoom r : intersectRooms) {
 								AxisAlignedBB bb = r.getBoundingBox();
 								if (box.intersects(bb)) {
 //									Dungeons2.log.debug(String.format("Hallway @ %s intersects with room @ %s", box, bb));
@@ -132,8 +134,8 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 						
 						// lastly, check against all other hallways
 						if (buildBlock) {
-							for (Room r : getHallways()) {
-								AxisAlignedBB bb = r.getBoundingBox();
+							for (IHallway r : getHallways()) {
+								AxisAlignedBB bb = ((IDecoratedRoom)r).getBoundingBox();
 								if (box.intersects(bb)) {
 //									Dungeons2.log.debug(String.format("Hallway @ %s intersects with hallway @ %s", box, bb));
 									buildBlock = false;
@@ -145,7 +147,7 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 					}
 
 					// update the world with the blockState
-					if (blockState != null && buildBlock && blockState != IDungeonsBlockProvider.NULL_BLOCK) {
+					if (blockState != null && buildBlock && blockState != DungeonBuilder.NULL_BLOCK) {
 						world.setBlockState(worldCoords.toPos(), blockState, 3);
 					}
 				}				
@@ -160,28 +162,28 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 	/**
 	 * @return the hallways
 	 */
-	public List<Hallway> getHallways() {
+	public List<IHallway> getHallways() {
 		return hallways;
 	}
 
 	/**
 	 * @param hallways the hallways to set
 	 */
-	public void setHallways(List<Hallway> hallways) {
+	public void setHallways(List<IHallway> hallways) {
 		this.hallways = hallways;
 	}
 
 	/**
 	 * @return the rooms
 	 */
-	public List<Room> getRooms() {
+	public List<IDecoratedRoom> getRooms() {
 		return rooms;
 	}
 
 	/**
 	 * @param rooms the rooms to set
 	 */
-	public void setRooms(List<Room> rooms) {
+	public void setRooms(List<IDecoratedRoom> rooms) {
 		this.rooms = rooms;
 	}
 }

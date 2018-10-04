@@ -2,7 +2,7 @@ package com.someguyssoftware.dungeonsengine.model;
 
 import com.someguyssoftware.gottschcore.enums.Alignment;
 
-public interface IHallway {
+public interface IHallway extends IRoom {
 
 	IHallway getHallway();
 

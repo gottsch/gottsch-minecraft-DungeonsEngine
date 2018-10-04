@@ -13,9 +13,11 @@ import com.someguyssoftware.dungeonsengine.generator.blockprovider.EndRoomBlockP
 import com.someguyssoftware.dungeonsengine.generator.blockprovider.EntranceRoomBlockProvider;
 import com.someguyssoftware.dungeonsengine.generator.blockprovider.HallwayBlockProvider;
 import com.someguyssoftware.dungeonsengine.generator.blockprovider.PillarRingRoomBlockProvider;
+import com.someguyssoftware.dungeonsengine.generator.blockprovider.ShaftBlockProvider;
 import com.someguyssoftware.dungeonsengine.generator.blockprovider.SinglePillarRoomBlockProvider;
 import com.someguyssoftware.dungeonsengine.generator.blockprovider.StandardBlockProvider;
 import com.someguyssoftware.dungeonsengine.generator.blockprovider.StartRoomBlockProvider;
+import com.someguyssoftware.dungeonsengine.generator.strategy.StandardHallwayGenerationStrategy;
 import com.someguyssoftware.dungeonsengine.generator.strategy.StandardRoomGenerationStrategy;
 import com.someguyssoftware.dungeonsengine.generator.strategy.SupportedHallwayGenerationStrategy;
 import com.someguyssoftware.dungeonsengine.generator.strategy.SupportedRoomGenerationStrategy;
@@ -210,7 +212,7 @@ public class RoomGeneratorFactory {
 	 */
 	public IRoomGenerator createStandardShaftGenerator(IDecoratedRoom shaft) {
 		IRoomGenerator gen = null;
-		gen = new RoomGenerator(new StandardRoomGenerationStrategy(new ShaftBlockProvider()));
+		gen = new RoomGenerator(new StandardRoomGenerationStrategy(new ShaftBlockProvider(defaultStyleSheet)));
 		return gen;
 	}
 	
@@ -220,7 +222,7 @@ public class RoomGeneratorFactory {
 	 * @return
 	 */
 	public IRoomGenerator createSupportedShaftGenerator(IDecoratedRoom shaft) {
-		IRoomGenerator gen = new RoomGenerator(new SupportedRoomGenerationStrategy(new ShaftBlockProvider()));
+		IRoomGenerator gen = new RoomGenerator(new SupportedRoomGenerationStrategy(new ShaftBlockProvider(defaultStyleSheet)));
 		return gen;
 	}
 }
