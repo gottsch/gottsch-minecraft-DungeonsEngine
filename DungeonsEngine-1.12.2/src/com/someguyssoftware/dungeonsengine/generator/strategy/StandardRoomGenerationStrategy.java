@@ -44,7 +44,7 @@ public class StandardRoomGenerationStrategy extends AbstractRoomGenerationStrate
 	@Override
 	public void generate(World world, Random random, IDecoratedRoom room, Theme theme, StyleSheet styleSheet, LevelConfig config) {
 		IBlockState blockState = null;
-//		Multimap<IArchitecturalElement, ICoords> blueprint = room.getFloorMap();
+		Multimap<IArchitecturalElement, ICoords> blueprint = room.getFloorMap();
 		Map<ICoords, Arrangement> postProcessMap = new HashMap<>();
 		
 		// generate the room
@@ -64,7 +64,7 @@ public class StandardRoomGenerationStrategy extends AbstractRoomGenerationStrate
 					// add the design element to the blueprint (if floor level or surface_air)
 					if (worldCoords.getY() == room.getMinY() + 1 ||
 							arrangement.getElement().getBase() == Elements.SURFACE_AIR) {
-//						blueprint.put(arrangement.getElement(), worldCoords);
+						blueprint.put(arrangement.getElement(), worldCoords);
 					}
 					
 					// if element is of a type that requires post-processing, save for processing after the rest of the room is generated

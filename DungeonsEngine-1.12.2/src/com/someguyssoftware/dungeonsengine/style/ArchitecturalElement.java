@@ -145,8 +145,9 @@ public class ArchitecturalElement implements IArchitecturalElement {
 	 * @see com.someguyssoftware.dungeonsengine.model.IArchitecturalElement#setFace(com.someguyssoftware.dungeonsengine.enums.Face)
 	 */
 	@Override
-	public void setFace(Face face) {
+	public IArchitecturalElement setFace(Face face) {
 		this.face = face;
+		return this;
 	}
 
 	/* (non-Javadoc)

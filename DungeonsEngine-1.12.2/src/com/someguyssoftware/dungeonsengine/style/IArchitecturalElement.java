@@ -52,7 +52,7 @@ public interface IArchitecturalElement {
 	/**
 	 * @param face the face to set
 	 */
-	void setFace(Face face);
+	IArchitecturalElement setFace(Face face);
 
 	/**
 	 * @return the base

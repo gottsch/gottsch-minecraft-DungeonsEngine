@@ -37,7 +37,7 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 	/*
 	 * a list of all the rooms in the level 
 	 */
-	private List<IDecoratedRoom> rooms;
+	private List<IRoom> rooms;
 	
 	/*
 	 * a list of generated hallways
@@ -58,7 +58,7 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 	 * @param rooms
 	 * @param hallways
 	 */
-	public StandardHallwayGenerationStrategy(IDungeonsBlockProvider blockProvider, List<IDecoratedRoom> rooms, List<IHallway> hallways) {
+	public StandardHallwayGenerationStrategy(IDungeonsBlockProvider blockProvider, List<IRoom> rooms, List<IHallway> hallways) {
 		super(blockProvider);
 		//		setBlockProvider(blockProvider);
 		setRooms(rooms);
@@ -76,8 +76,8 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 		Multimap<IArchitecturalElement, ICoords> blueprint = room.getFloorMap();
 		
 		// collect a list of rooms that the hallway intersects against
-		List<IDecoratedRoom> intersectRooms = new ArrayList<>();
-		for (IDecoratedRoom otherRoom : getRooms()) {
+		List<IRoom> intersectRooms = new ArrayList<>();
+		for (IRoom otherRoom : getRooms()) {
 			if (((IRoom)hallway).getBoundingBox().intersects(otherRoom.getBoundingBox())) {
 //				Dungeons2.log.debug("Hallway intersects with Room: " + room);
 				intersectRooms.add(otherRoom);
@@ -122,7 +122,7 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 						
 						// second, check against any rooms in the level that the hallway intersects with
 						if (buildBlock) {
-							for (IDecoratedRoom r : intersectRooms) {
+							for (IRoom r : intersectRooms) {
 								AxisAlignedBB bb = r.getBoundingBox();
 								if (box.intersects(bb)) {
 //									Dungeons2.log.debug(String.format("Hallway @ %s intersects with room @ %s", box, bb));
@@ -176,14 +176,14 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 	/**
 	 * @return the rooms
 	 */
-	public List<IDecoratedRoom> getRooms() {
+	public List<IRoom> getRooms() {
 		return rooms;
 	}
 
 	/**
 	 * @param rooms the rooms to set
 	 */
-	public void setRooms(List<IDecoratedRoom> rooms) {
+	public void setRooms(List<IRoom> rooms) {
 		this.rooms = rooms;
 	}
 }

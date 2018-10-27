@@ -7,6 +7,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.someguyssoftware.dungeonsengine.enums.Face;
 import com.someguyssoftware.dungeonsengine.style.ArchitecturalElement;
 import com.someguyssoftware.dungeonsengine.style.IArchitecturalElement;
 import com.someguyssoftware.gottschcore.enums.IEnum;
@@ -17,7 +18,7 @@ import com.someguyssoftware.gottschcore.enums.IEnum;
  */
 public class Elements {
 	public static IArchitecturalElement NONE = new ArchitecturalElement("none", -1, -1);
-	
+
 	public static IArchitecturalElement AIR = new ArchitecturalElement("air", 0, 0);
 	public static IArchitecturalElement SURFACE_AIR = new ArchitecturalElement("surface_air", 0, 0, AIR);
 	public static IArchitecturalElement FLOOR_AIR = new ArchitecturalElement("floor_air", 0, 0, AIR);
@@ -31,40 +32,40 @@ public class Elements {
 	public static IArchitecturalElement WALL_CAPITAL = new ArchitecturalElement("wall_capital", 100, 50, WALL);
 	public static IArchitecturalElement CEILING = new ArchitecturalElement("ceiling", 100, 50);
 	
-	public static IArchitecturalElement BASE;
-	public static IArchitecturalElement COLUMN;
-	public static IArchitecturalElement CAPITAL;
+	// legecy - TODO remove
+	public static IArchitecturalElement FACADE = new ArchitecturalElement("facade", 100, 0);
+	public static IArchitecturalElement FACADE_SUPPORT = new ArchitecturalElement("facade_support", 100, 100, WALL);
+		
+	public static IArchitecturalElement BASE = new ArchitecturalElement("base", 100, 0).setFace(Face.EXTERIOR);
+	public static IArchitecturalElement COLUMN = new ArchitecturalElement("column", 100, 100).setFace(Face.EXTERIOR);
+	public static IArchitecturalElement CAPITAL = new ArchitecturalElement("capital", 100, 0).setFace(Face.EXTERIOR);
 	
-	public static IArchitecturalElement TRIM;
-	public static IArchitecturalElement CROWN;
-	public static IArchitecturalElement CORNICE;
-	public static IArchitecturalElement PLINTH;
+	public static IArchitecturalElement TRIM = new ArchitecturalElement("trim", 0, 0, FACADE).setFace(Face.INTERIOR);
+	public static IArchitecturalElement CROWN = new ArchitecturalElement("crown", 100, 0, FACADE).setFace(Face.INTERIOR);
+	public static IArchitecturalElement CORNICE = new ArchitecturalElement("cornice", 100, 0, FACADE).setFace(Face.EXTERIOR);
+	public static IArchitecturalElement PLINTH = new ArchitecturalElement("plinth", 0, 0, FACADE).setFace(Face.EXTERIOR);
 	
-	public static IArchitecturalElement PILASTER;
-	public static IArchitecturalElement PILASTER_BASE;
-	public static IArchitecturalElement PILASTER_CAPITAL;
-	public static IArchitecturalElement PILLAR;
-	public static IArchitecturalElement PILLAR_BASE;
-	public static IArchitecturalElement PILLAR_CAPITAL;
+	public static IArchitecturalElement PILASTER = new ArchitecturalElement("pilaster", 100, 100).setFace(Face.INTERIOR);
+	public static IArchitecturalElement PILASTER_BASE = new ArchitecturalElement("pilaster_base", 100, 0).setFace(Face.INTERIOR);
+	public static IArchitecturalElement PILASTER_CAPITAL = new ArchitecturalElement("pilaster_capital", 100, 0).setFace(Face.INTERIOR);
+	public static IArchitecturalElement PILLAR = new ArchitecturalElement("pillar", 100, 100).setFace(Face.INTERIOR);
+	public static IArchitecturalElement PILLAR_BASE = new ArchitecturalElement("pillar_base", 100, 0).setFace(Face.INTERIOR);
+	public static IArchitecturalElement PILLAR_CAPITAL = new ArchitecturalElement("pillar_capital", 100, 0).setFace(Face.INTERIOR);
 	
-	public static IArchitecturalElement CRENELLATION;
-	public static IArchitecturalElement PARAPET;
-	public static IArchitecturalElement MERLON;
+	public static IArchitecturalElement CRENELLATION = new ArchitecturalElement("crenellation", 100, 50).setFace(Face.EXTERIOR);
+	public static IArchitecturalElement PARAPET = new ArchitecturalElement("parapet", 100, 50).setFace(Face.EXTERIOR);
+	public static IArchitecturalElement MERLON = new ArchitecturalElement("merlon", 100, 50).setFace(Face.EXTERIOR);
 	
-	public static IArchitecturalElement COFFER;
-	public static IArchitecturalElement COFFERED_MIDBEAM;
-	public static IArchitecturalElement COFFERED_CROSSBEAM;
-	public static IArchitecturalElement LADDER;
-	public static IArchitecturalElement LADDER_PILLAR;
-	public static IArchitecturalElement GUTTER;
-	public static IArchitecturalElement GRATE;
+	public static IArchitecturalElement COFFER = new ArchitecturalElement("coffer", 100, 100).setFace(Face.INTERIOR);
+	public static IArchitecturalElement COFFERED_MIDBEAM  = new ArchitecturalElement("coffered_midbeam", 100, 100).setFace(Face.INTERIOR);
+	public static IArchitecturalElement COFFERED_CROSSBEAM = new ArchitecturalElement("coffered_crossbeam", 100, 100).setFace(Face.EXTERIOR);
+	public static IArchitecturalElement LADDER = new ArchitecturalElement("ladder", 100, 0);
+	public static IArchitecturalElement LADDER_PILLAR = new ArchitecturalElement("ladder_pillar", 100, 100);
+	public static IArchitecturalElement GUTTER = new ArchitecturalElement("gutter", 100, 50);
+	public static IArchitecturalElement GRATE = new ArchitecturalElement("grate", 100, 50);
 	
-	public static IArchitecturalElement WINDOW;
-	public static IArchitecturalElement SIGN;
-	
-	// legecy
-	public static IArchitecturalElement FACADE;
-	public static IArchitecturalElement FACADE_SUPPORT;
+	public static IArchitecturalElement WINDOW = new ArchitecturalElement("window", 100, 0);
+	public static IArchitecturalElement SIGN = new ArchitecturalElement("sign", 0, 0);
 	
 	/**
 	 * 

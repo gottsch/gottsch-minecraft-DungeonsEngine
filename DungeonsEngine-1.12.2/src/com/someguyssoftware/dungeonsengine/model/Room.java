@@ -445,6 +445,7 @@ public class Room implements IRoom {
 		this.reject = reject;
 	}
 	
+	// TODO move to own file or part of IRoom
 	public enum Type {
 		GENERAL("general"),
 		LADDER("ladder"),

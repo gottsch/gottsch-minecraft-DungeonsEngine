@@ -51,6 +51,38 @@ public class DecoratedRoom implements IDecoratedRoom {
 	
 	/**
 	 * 
+	 * @param element
+	 */
+	@Override
+	public void include(ElementsEnum element) {
+		if (!elements.contains(element)) {
+			elements.add(element);
+		}
+	}
+	
+	/**
+	 * @param element
+	 * @param extras
+	 * @return
+	 */
+	@Override
+	public boolean include(ElementsEnum element, ElementsEnum...extras) {
+		include(element);
+		for (ElementsEnum e : extras) {
+			include(e);
+		}
+		return false;
+	}
+	
+	@Override
+	public void exclude(ElementsEnum element) {
+		if (elements.contains(element)) {
+			elements.remove(element);
+		}
+	}
+	
+	/**
+	 * 
 	 * @param coords
 	 * @return
 	 */

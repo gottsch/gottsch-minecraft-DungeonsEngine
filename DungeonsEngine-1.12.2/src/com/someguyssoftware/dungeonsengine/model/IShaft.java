@@ -1,6 +1,6 @@
 package com.someguyssoftware.dungeonsengine.model;
 
-public interface IShaft {
+public interface IShaft extends IRoom {
 
 	/**
 	 * @return the source

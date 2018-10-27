@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.someguyssoftware.dungeonsengine.config.DungeonConfig;
 import com.someguyssoftware.dungeonsengine.graph.Wayline;
+import com.someguyssoftware.dungeonsengine.style.Theme;
 
 /**
  * @author Mark Gottschling on Jul 27, 2016
@@ -22,7 +23,7 @@ public class Dungeon implements IDungeon {
 	private Integer minX, maxX;
 	private Integer minY, maxY;
 	private Integer minZ, maxZ;
-//	private Theme theme;
+	private Theme theme;
 	
 	private DungeonConfig config;
 	
@@ -159,19 +160,19 @@ public class Dungeon implements IDungeon {
 		this.entrance = entrance;
 	}
 
-//	/**
-//	 * @return the theme
-//	 */
-//	public Theme getTheme() {
-//		return theme;
-//	}
-//
-//	/**
-//	 * @param theme the theme to set
-//	 */
-//	public void setTheme(Theme theme) {
-//		this.theme = theme;
-//	}
+	/**
+	 * @return the theme
+	 */
+	public Theme getTheme() {
+		return theme;
+	}
+
+	/**
+	 * @param theme the theme to set
+	 */
+	public void setTheme(Theme theme) {
+		this.theme = theme;
+	}
 
 	/* (non-Javadoc)
 	 * @see com.someguyssoftware.dungeonsengine.model.IDungeon#getShafts()

@@ -22,6 +22,7 @@ import com.someguyssoftware.dungeonsengine.generator.strategy.StandardRoomGenera
 import com.someguyssoftware.dungeonsengine.generator.strategy.SupportedHallwayGenerationStrategy;
 import com.someguyssoftware.dungeonsengine.generator.strategy.SupportedRoomGenerationStrategy;
 import com.someguyssoftware.dungeonsengine.model.IHallway;
+import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.Room.Type;
 import com.someguyssoftware.dungeonsengine.style.IDecoratedRoom;
 import com.someguyssoftware.dungeonsengine.style.StyleSheet;
@@ -94,7 +95,7 @@ public class RoomGeneratorFactory {
 	 * @param useSupport
 	 * @return
 	 */
-	public IRoomGenerator createHallwayGenerator(IHallway hallway, List<IDecoratedRoom> rooms, List<IHallway> hallways, Boolean useSupport) {
+	public IRoomGenerator createHallwayGenerator(IDecoratedRoom hallway, List<IRoom> rooms, List<IHallway> hallways, Boolean useSupport) {
 		if (useSupport) {
 			return createSupportedHallwayGenerator(hallway, rooms, hallways);
 		}
@@ -187,7 +188,7 @@ public class RoomGeneratorFactory {
 	 * @param hallways 
 	 * @return
 	 */
-	public IRoomGenerator createStandardHallwayGenerator(IHallway hallway, List<IDecoratedRoom> rooms, List<IHallway> hallways) {
+	public IRoomGenerator createStandardHallwayGenerator(IDecoratedRoom hallway, List<IRoom> rooms, List<IHallway> hallways) {
 		HallwayGenerator gen = null;
 		gen = new HallwayGenerator(new StandardHallwayGenerationStrategy(new HallwayBlockProvider(defaultStyleSheet), rooms, hallways));
 		return gen;
@@ -200,7 +201,7 @@ public class RoomGeneratorFactory {
 	 * @param hallways
 	 * @return
 	 */
-	public IRoomGenerator createSupportedHallwayGenerator(IHallway hallway, List<IDecoratedRoom> rooms, List<IHallway> hallways) {
+	public IRoomGenerator createSupportedHallwayGenerator(IDecoratedRoom hallway, List<IRoom> rooms, List<IHallway> hallways) {
 		HallwayGenerator gen = new HallwayGenerator(new SupportedHallwayGenerationStrategy(new HallwayBlockProvider(defaultStyleSheet), rooms, hallways));
 		return gen;
 	}

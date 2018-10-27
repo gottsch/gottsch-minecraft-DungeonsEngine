@@ -22,6 +22,12 @@ public interface IDecoratedRoom {
 
 	boolean has(ElementsEnum element, ElementsEnum... extra);
 	
+	void include(ElementsEnum element);
+
+	boolean include(ElementsEnum element, ElementsEnum[] extras);
+	
+	void exclude(ElementsEnum element);
+	
 	/**
 	 * @return the room
 	 */
@@ -149,6 +155,10 @@ public interface IDecoratedRoom {
 		return this.getRoom().getBoundingBox();
 	}
 
-
+	/**
+	 * 
+	 * @param layout
+	 */
+	void setLayout(Layout layout);
 
 }

@@ -40,7 +40,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 	/*
 	 * a list of all the rooms in the level 
 	 */
-	private List<IDecoratedRoom> rooms;
+	private List<IRoom> rooms;
 	
 	/*
 	 * a list of generated hallways
@@ -53,7 +53,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 	 * @param rooms
 	 * @param hallways
 	 */
-	public SupportedHallwayGenerationStrategy(IDungeonsBlockProvider blockProvider, List<IDecoratedRoom> rooms, List<IHallway> hallways) {
+	public SupportedHallwayGenerationStrategy(IDungeonsBlockProvider blockProvider, List<IRoom> rooms, List<IHallway> hallways) {
 		super(blockProvider);
 		//		setBlockProvider(blockProvider);
 		setRooms(rooms);
@@ -74,8 +74,8 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 		ISupportedBlock supportedBlock = null;
 		
 		// collect a list of rooms that the hallway intersects against
-		List<IDecoratedRoom> intersectRooms = new ArrayList<>();
-		for (IDecoratedRoom otherRoom : getRooms()) {
+		List<IRoom> intersectRooms = new ArrayList<>();
+		for (IRoom otherRoom : getRooms()) {
 			if (room.getBoundingBox().intersects(otherRoom.getBoundingBox())) {
 				intersectRooms.add(otherRoom);
 			}
@@ -209,7 +209,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 	 * @param intersectRooms
 	 * @return
 	 */
-	public boolean isBlockBuildable(ICoords worldCoords, IHallway hallway, List<IDecoratedRoom> intersectRooms) {
+	public boolean isBlockBuildable(ICoords worldCoords, IHallway hallway, List<IRoom> intersectRooms) {
 		// NOTE we already know at this point that the design element is not AIR				
 		AxisAlignedBB box = new AxisAlignedBB(worldCoords.toPos());
 		boolean buildBlock = true;						
@@ -228,7 +228,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 
 		// second, check against any rooms in the level that the hallway intersects with
 		if (buildBlock) {
-			for (IDecoratedRoom r : intersectRooms) {
+			for (IRoom r : intersectRooms) {
 				AxisAlignedBB bb = r.getBoundingBox();
 				if (box.intersects(bb)) {
 					buildBlock = false;
@@ -255,14 +255,14 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 	/**
 	 * @return the rooms
 	 */
-	public List<IDecoratedRoom> getRooms() {
+	public List<IRoom> getRooms() {
 		return rooms;
 	}
 
 	/**
 	 * @param rooms the rooms to set
 	 */
-	public void setRooms(List<IDecoratedRoom> rooms) {
+	public void setRooms(List<IRoom> rooms) {
 		this.rooms = rooms;
 	}
 
