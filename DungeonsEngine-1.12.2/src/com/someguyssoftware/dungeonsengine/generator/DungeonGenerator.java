@@ -19,6 +19,7 @@ import com.someguyssoftware.dungeonsengine.config.IDungeonsEngineConfig;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.model.Dungeon;
 import com.someguyssoftware.dungeonsengine.model.Elements;
+import com.someguyssoftware.dungeonsengine.model.IDungeon;
 import com.someguyssoftware.dungeonsengine.model.IHallway;
 import com.someguyssoftware.dungeonsengine.model.ILevel;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
@@ -102,7 +103,7 @@ public class DungeonGenerator {
 	 * @return
 	 * @throws FileNotFoundException
 	 */
-	public boolean generate(World world, Random random, Dungeon dungeon, StyleSheet styleSheet, ChestSheet chestSheet, SpawnSheet spawnSheet) throws FileNotFoundException {
+	public boolean generate(World world, Random random, IDungeon dungeon, StyleSheet styleSheet, ChestSheet chestSheet, SpawnSheet spawnSheet) throws FileNotFoundException {
 
 		// if styleSheet is null then use the default style sheet
 		if (styleSheet == null) {
@@ -244,7 +245,7 @@ public class DungeonGenerator {
 	 * @param roomDecorator
 	 */
 	private void buildEntrance(World world, Random random,
-			Dungeon dungeon, LayoutAssigner layoutAssigner, RoomGeneratorFactory factory,
+			IDungeon dungeon, LayoutAssigner layoutAssigner, RoomGeneratorFactory factory,
 			IRoomDecorator roomDecorator, StyleSheet styleSheet) {
 		
 		IDecoratedRoom entranceRoom = new DecoratedRoom(dungeon.getEntrance());

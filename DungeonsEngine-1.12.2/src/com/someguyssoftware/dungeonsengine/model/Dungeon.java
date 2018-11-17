@@ -163,6 +163,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @return the theme
 	 */
+	@Override
 	public Theme getTheme() {
 		return theme;
 	}
@@ -170,6 +171,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @param theme the theme to set
 	 */
+	@Override
 	public void setTheme(Theme theme) {
 		this.theme = theme;
 	}

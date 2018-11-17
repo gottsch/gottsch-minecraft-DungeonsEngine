@@ -3,6 +3,7 @@ package com.someguyssoftware.dungeonsengine.model;
 import java.util.List;
 
 import com.someguyssoftware.dungeonsengine.config.DungeonConfig;
+import com.someguyssoftware.dungeonsengine.style.Theme;
 
 /**
  * 
@@ -61,4 +62,9 @@ public interface IDungeon {
 	 * @param name the name to set
 	 */
 	void setName(String name);
+
+	// TEMP
+	Theme getTheme();
+
+	void setTheme(Theme theme);
 }
