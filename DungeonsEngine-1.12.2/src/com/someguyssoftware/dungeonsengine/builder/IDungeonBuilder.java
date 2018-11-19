@@ -42,4 +42,8 @@ public interface IDungeonBuilder {
 	 */
 	void setLevelBuilder(ILevelBuilder levelBuilder);
 
+	ILevelBuilder getSurfaceLevelBuilder();
+
+	void setSurfaceLevelBuilder(ILevelBuilder surfaceLevelBuilder);
+
 }
