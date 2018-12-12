@@ -4,7 +4,9 @@
 package com.someguyssoftware.dungeonsengine.style;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.someguyssoftware.dungeonsengine.generator.Location;
 import com.someguyssoftware.dungeonsengine.model.Elements.ElementsEnum;
@@ -151,6 +153,7 @@ public class DecoratedRoom implements IDecoratedRoom {
 	 */
 	@Override
 	public Multimap<IArchitecturalElement, ICoords> getFloorMap() {
+		if (floorMap == null) floorMap =ArrayListMultimap.create();
 		return floorMap;
 	}
 

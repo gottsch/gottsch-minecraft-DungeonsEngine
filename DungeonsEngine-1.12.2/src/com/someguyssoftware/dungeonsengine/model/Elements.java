@@ -21,9 +21,9 @@ public class Elements {
 
 	public static IArchitecturalElement AIR = new ArchitecturalElement("air", 0, 0);
 	public static IArchitecturalElement SURFACE_AIR = new ArchitecturalElement("surface_air", 0, 0, AIR);
-	public static IArchitecturalElement FLOOR_AIR = new ArchitecturalElement("floor_air", 0, 0, AIR);
-	public static IArchitecturalElement WALL_AIR = new ArchitecturalElement("wall_air", 0, 0);
-	public static IArchitecturalElement CEILING_AIR = new ArchitecturalElement("ceiling_air", 0, 0);
+	public static IArchitecturalElement FLOOR_AIR = new ArchitecturalElement("floor_air", 0, 0, SURFACE_AIR);
+	public static IArchitecturalElement WALL_AIR = new ArchitecturalElement("wall_air", 0, 0, SURFACE_AIR);
+	public static IArchitecturalElement CEILING_AIR = new ArchitecturalElement("ceiling_air", 0, 0, SURFACE_AIR);
 
 	public static IArchitecturalElement FLOOR = new ArchitecturalElement("floor", 100, 50);
 	public static IArchitecturalElement FLOOR_ALT = new ArchitecturalElement("floor_alt", 100, 50);
@@ -90,8 +90,13 @@ public class Elements {
 	public enum ElementsEnum implements IEnum {
 		NONE(-1, Elements.NONE.getName(), Elements.NONE),
 		AIR(0, Elements.AIR.getName(), Elements.AIR),
+		SURFACE_AIR(0, Elements.SURFACE_AIR.getName(), Elements.SURFACE_AIR),
+		FLOOR_AIR(0, Elements.FLOOR_AIR.getName(), Elements.FLOOR_AIR),
+		WALL_AIR(0, Elements.WALL_AIR.getName(), Elements.WALL_AIR),
+		CEILING_AIR(0, Elements.CEILING_AIR.getName(), Elements.CEILING_AIR),
+		
 		FLOOR(1, Elements.FLOOR.getName(), Elements.FLOOR),
-		 FLOOR_ALT(1, Elements.FLOOR_ALT.getName(), Elements.FLOOR_ALT),
+		FLOOR_ALT(1, Elements.FLOOR_ALT.getName(), Elements.FLOOR_ALT),
 		WALL(2, Elements.WALL.getName(), Elements.WALL),
 		WALL_BASE(3, Elements.WALL_BASE.getName(), Elements.WALL_BASE),
 		WALL_CAPITAL(4, Elements.WALL_CAPITAL.getName(), Elements.WALL_CAPITAL),

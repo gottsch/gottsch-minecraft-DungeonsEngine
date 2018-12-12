@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.collect.Multimap;
 import com.someguyssoftware.dungeonsengine.builder.DungeonBuilder;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
@@ -29,6 +32,7 @@ import net.minecraft.world.World;
  *
  */
 public class StandardRoomGenerationStrategy extends AbstractRoomGenerationStrategy {
+	public static Logger logger = LogManager.getLogger("DungeonsEngine");
 	
 	/**
 	 * 
@@ -64,6 +68,9 @@ public class StandardRoomGenerationStrategy extends AbstractRoomGenerationStrate
 					// add the design element to the blueprint (if floor level or surface_air)
 					if (worldCoords.getY() == room.getMinY() + 1 ||
 							arrangement.getElement().getBase() == Elements.SURFACE_AIR) {
+//						logger.debug("blueprint -> {}", blueprint);
+//						logger.debug("arrangement -> {}", arrangement);
+//						logger.debug("element -> {}", arrangement.getElement());
 						blueprint.put(arrangement.getElement(), worldCoords);
 					}
 					

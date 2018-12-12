@@ -6,11 +6,19 @@ package com.someguyssoftware.dungeonsengine.rotate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.someguyssoftware.gottschcore.block.CardinalDirectionBlock;
+import com.someguyssoftware.gottschcore.block.CardinalDirectionFacadeBlock;
+import com.someguyssoftware.gottschcore.block.RelativeDirectionBlock;
+import com.someguyssoftware.gottschcore.block.RelativeDirectionFacadeBlock;
 import com.someguyssoftware.gottschcore.enums.Direction;
 import com.someguyssoftware.gottschcore.enums.Rotate;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLever;
+import net.minecraft.block.BlockLog;
+import net.minecraft.block.BlockOldLog;
 import net.minecraft.block.BlockSlab;
+import net.minecraft.block.BlockVine;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -26,11 +34,36 @@ public class RotatorHelper {
 	
 	// rotators
 	private static IRotator facingRotator = new DirectionalRotator();
+	public static IRotator relativeDirectionBlockRotator = new RelativeDirectionRotator();
+	public static IRotator cardinalDirectionBlockRotator = new CardinalDirectionRotator();
+	public static IRotator vineRotator = new VineRotator();
+	public static IRotator logRotator = new LogRotator();
+	public static IRotator leverRotator = new LeverRotator();
+	
+	/*
+	 * on classload, register all blocks with rotators
+	 */
+	static {
+		// register all the blocks with the rotators in the RotatorRegistry
+		RotatorHelper.registerBlocks();
+	}
 	
 	/**
 	 * 
 	 */
 	private RotatorHelper() {	}
+	
+	private static void registerBlocks() {
+		RotatorRegistry registry = RotatorRegistry.getInstance();
+		registry.registerBlockRotator(BlockLog.class, logRotator);
+		registry.registerBlockRotator(BlockOldLog.class, logRotator);
+		registry.registerBlockRotator(BlockLever.class, leverRotator);
+		registry.registerBlockRotator(BlockVine.class, vineRotator);
+		registry.registerBlockRotator(RelativeDirectionBlock.class, relativeDirectionBlockRotator);
+		registry.registerBlockRotator(RelativeDirectionFacadeBlock.class, relativeDirectionBlockRotator);
+		registry.registerBlockRotator(CardinalDirectionBlock.class, cardinalDirectionBlockRotator);
+		registry.registerBlockRotator(CardinalDirectionFacadeBlock.class, cardinalDirectionBlockRotator);
+	}
 	
 	/**
 	 * 

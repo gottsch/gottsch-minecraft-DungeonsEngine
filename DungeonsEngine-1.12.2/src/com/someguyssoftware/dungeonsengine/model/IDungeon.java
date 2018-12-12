@@ -67,4 +67,28 @@ public interface IDungeon {
 	Theme getTheme();
 
 	void setTheme(Theme theme);
+
+	Integer getMaxX();
+
+	void setMaxX(Integer maxX);
+
+	Integer getMinY();
+
+	void setMinY(Integer minY);
+
+	Integer getMaxY();
+
+	void setMaxY(Integer maxY);
+
+	Integer getMinZ();
+
+	void setMinZ(Integer minZ);
+
+	Integer getMinX();
+
+	void setMinX(Integer minX);
+
+	Integer getMaxZ();
+
+	void setMaxZ(Integer maxZ);
 }

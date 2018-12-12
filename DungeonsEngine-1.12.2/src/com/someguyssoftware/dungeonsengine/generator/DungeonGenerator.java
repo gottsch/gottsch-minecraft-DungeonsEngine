@@ -78,6 +78,7 @@ public class DungeonGenerator {
 	 * 
 	 */
 	public DungeonGenerator(IDungeonsEngineConfig engineConfig) throws Exception {
+		// TODO is this is the default sheets, then they shouldn't be in the mods DungeonGenerator class
 		// load the default style sheet
 		if (defaultStyleSheet == null) {
 			setDefaultStyleSheet(StyleSheetLoader.load());
@@ -115,6 +116,8 @@ public class DungeonGenerator {
 		 *  create a room generator factory
 		 */
 		RoomGeneratorFactory factory = new RoomGeneratorFactory(roomGenerators);
+		factory.defaultStyleSheet = styleSheet; // TODO fix this
+		
 		/*
 		 * 
 		 */

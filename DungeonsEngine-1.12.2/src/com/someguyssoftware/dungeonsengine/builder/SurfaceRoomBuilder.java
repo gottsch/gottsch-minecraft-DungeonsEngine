@@ -8,6 +8,7 @@ import java.util.Random;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
 import com.someguyssoftware.dungeonsengine.model.Room;
+import com.someguyssoftware.dungeonsengine.model.Room.Type;
 import com.someguyssoftware.gottschcore.enums.Direction;
 import com.someguyssoftware.gottschcore.positional.Coords;
 import com.someguyssoftware.gottschcore.positional.ICoords;
@@ -47,7 +48,7 @@ public class SurfaceRoomBuilder extends RoomBuilder implements ISurfaceRoomBuild
 		/*
 		 * the start of the dungeon
 		 */
-		IRoom room = new Room().setStart(true).setAnchor(true);//.setType(Type.ENTRANCE);
+		IRoom room = new Room().setStart(true).setAnchor(true).setType(Type.ENTRANCE);
 		
 		/*
 		 *  adjust the minimum dimension sizes for entrance room.

@@ -68,6 +68,11 @@ public class DungeonBuilder implements IDungeonBuilder {
 	 */
 	@Override
 	public IDungeon build(World world, Random random, AxisAlignedBB field, ICoords startPoint, DungeonConfig config) {
+		logger.debug("levelBuilder -> {}", getLevelBuilder());
+		logger.debug("levelBuilder.config -> {}", getLevelBuilder().getConfig());
+		logger.debug("isMinecraftConstraintsOn -> {}", getLevelBuilder().getConfig().isMinecraftConstraintsOn());
+		logger.debug("startPoint -> {}", startPoint);
+		
 		/*
 		 *  0. determine if valid coords
 		 */
@@ -108,6 +113,9 @@ public class DungeonBuilder implements IDungeonBuilder {
 		 * The resultant dungeon object that contains all levels and the entrance of the dungeon.
 		 */
 		IDungeon dungeon = new Dungeon(config);
+		
+		// set the entrance
+		dungeon.setEntrance(surfaceLevel.getStartRoom());
 		
 		/*
 		 * A list of rooms that are pre-planned to be placed in the dungeons (not randomized).
@@ -170,6 +178,10 @@ public class DungeonBuilder implements IDungeonBuilder {
 			if (level == LevelBuilder.EMPTY_LEVEL)
 				return EMPTY_DUNGEON;
 			
+			// get the end room
+			endRoom = level.getEndRoom();
+			logger.debug("endRoom -> {}", endRoom);
+			
 			/*
 			 * add level to dungeon
 			 */
@@ -183,14 +195,14 @@ public class DungeonBuilder implements IDungeonBuilder {
 					logger.warn("levels don't require joining -> {} to {}", levelIndex, (levelIndex-1));
 				}
 			}
-			// TODO why do we need these values
+			// TODO why do we need these values --> the Y component is especially important
 			// update the min/max values for the dungeon
-//			if (dungeon.getMinX() == null || level.getMinX() < dungeon.getMinX()) dungeon.setMinX(level.getMinX());
-//			if (dungeon.getMaxX() == null || level.getMaxX() > dungeon.getMaxX()) dungeon.setMaxX(level.getMaxX());
-//			if (dungeon.getMinY() == null || level.getMinY() < dungeon.getMinY()) dungeon.setMinY(level.getMinY());
-//			if (dungeon.getMaxY() == null || level.getMaxY() > dungeon.getMaxY()) dungeon.setMaxY(level.getMaxY());
-//			if (dungeon.getMinZ() == null || level.getMinZ() < dungeon.getMinZ()) dungeon.setMinZ(level.getMinZ());
-//			if (dungeon.getMaxZ() == null || level.getMaxZ() > dungeon.getMaxZ()) dungeon.setMaxZ(level.getMaxZ());
+			if (dungeon.getMinX() == null || level.getMinX() < dungeon.getMinX()) dungeon.setMinX(level.getMinX());
+			if (dungeon.getMaxX() == null || level.getMaxX() > dungeon.getMaxX()) dungeon.setMaxX(level.getMaxX());
+			if (dungeon.getMinY() == null || level.getMinY() < dungeon.getMinY()) dungeon.setMinY(level.getMinY());
+			if (dungeon.getMaxY() == null || level.getMaxY() > dungeon.getMaxY()) dungeon.setMaxY(level.getMaxY());
+			if (dungeon.getMinZ() == null || level.getMinZ() < dungeon.getMinZ()) dungeon.setMinZ(level.getMinZ());
+			if (dungeon.getMaxZ() == null || level.getMaxZ() > dungeon.getMaxZ()) dungeon.setMaxZ(level.getMaxZ());
 			
 			// clear planned rooms
 			plannedRooms.clear();
@@ -203,7 +215,7 @@ public class DungeonBuilder implements IDungeonBuilder {
 			
 			// update the start point to below the previous level's end room
 			startPoint = endRoom.getBottomCenter();
-//			startPoint = startPoint.resetY(dungeon.getMinY() - (int)levelConfig.getHeight().getMax());
+			startPoint = startPoint.resetY(dungeon.getMinY() - (int)levelBuilder.getConfig().getHeight().getMax());
 			
 			// end of main loop
 		}

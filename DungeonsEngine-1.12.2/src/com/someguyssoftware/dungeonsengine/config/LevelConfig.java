@@ -6,6 +6,7 @@ package com.someguyssoftware.dungeonsengine.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.someguyssoftware.dungeonsengine.chest.ChestCategory;
 import com.someguyssoftware.gottschcore.Quantity;
 
 /**
@@ -142,9 +143,9 @@ public class LevelConfig {
 		setSpawnerFrequency(new Quantity(5, 10));
 		setChestFrequency(new Quantity(5, 10));
 		this.chestCategories = new ArrayList<>();
-//		this.chestCategories.add(ChestCategory.COMMON.name().toLowerCase());
-//		this.chestCategories.add(ChestCategory.UNCOMMON.name().toLowerCase());
-//		this.chestCategories.add(ChestCategory.RARE.name().toLowerCase());
+		this.chestCategories.add(ChestCategory.COMMON.name().toLowerCase());
+		this.chestCategories.add(ChestCategory.UNCOMMON.name().toLowerCase());
+		this.chestCategories.add(ChestCategory.RARE.name().toLowerCase());
 		
 		setWebFrequency(new Quantity(10, 20));
 		setNumberOfWebs(new Quantity(10, 10));

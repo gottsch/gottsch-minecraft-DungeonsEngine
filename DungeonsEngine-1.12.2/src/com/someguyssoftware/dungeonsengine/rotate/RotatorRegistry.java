@@ -82,7 +82,7 @@ public class RotatorRegistry {
 	 * @param clazz
 	 * @param rotator
 	 */
-	private void registerBlockRotator(Class<?> clazz, IRotator rotator) {
+	void registerBlockRotator(Class<?> clazz, IRotator rotator) {
 		if (!registry.containsKey(clazz.getName())) {
 			logger.debug("Registering Rotator for "  + clazz.getName());
 			registry.put(clazz.getName(), rotator);

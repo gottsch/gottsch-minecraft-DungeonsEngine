@@ -65,7 +65,7 @@ public class SupportedHallwayGenerationStrategy extends AbstractRoomGenerationSt
 	 */
 	@Override
 	public void generate(World world, Random random, IDecoratedRoom room, Theme theme, StyleSheet styleSheet, LevelConfig config) {
-		IHallway hallway = (IHallway)room;
+		IHallway hallway = (IHallway)room.getRoom();
 		IBlockState blockState = null;
 		Map<ICoords, Arrangement> postProcessMap = new HashMap<>();
 		Multimap<IArchitecturalElement, ICoords> blueprint = room.getFloorMap();

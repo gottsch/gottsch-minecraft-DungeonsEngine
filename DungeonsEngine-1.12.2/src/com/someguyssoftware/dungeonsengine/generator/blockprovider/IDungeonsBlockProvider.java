@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import com.someguyssoftware.dungeonsengine.builder.DungeonBuilder;
 import com.someguyssoftware.dungeonsengine.config.LevelConfig;
 import com.someguyssoftware.dungeonsengine.generator.Arrangement;
+import com.someguyssoftware.dungeonsengine.generator.DungeonGenerator;
 import com.someguyssoftware.dungeonsengine.generator.Location;
 import com.someguyssoftware.dungeonsengine.model.Elements;
 import com.someguyssoftware.dungeonsengine.model.IRoom;
@@ -378,6 +379,7 @@ public interface IDungeonsBlockProvider {
 
 		// ensure that a layout is used
 		if (layout == null) {
+			logger.debug("Getting layout from default style sheet");
 			layout = getDefaultStyleSheet().getLayouts().get(Layout.DEFAULT_NAME);
 		}
 		
@@ -393,7 +395,17 @@ public interface IDungeonsBlockProvider {
 
 		// TODO this will be part of the style sheet
 		// get the frame from the layout
-		Frame frame = layout.getFrames().get(Elements.ElementsEnum.getByValue(elem.getName()).name());
+		Frame frame = null;
+		try {
+			frame = layout.getFrames().get(Elements.ElementsEnum.getByValue(elem.getName()).name());
+		}
+		catch(Exception e) {
+			logger.debug("arch element -> {}", elem.getName());
+			logger.debug("layout -> {}", layout);
+			logger.debug("frames -> {}", layout.getFrames());
+			logger.debug("elementsEnum -> {}", Elements.ElementsEnum.getByValue(elem.getName()).name());
+		}
+		
 		// recursively check if layout has a ref and check if it contains the frame (up to 5 nested refs)
 		if (frame == null) {
 			List<String> layoutRefs = new ArrayList<>(5);
@@ -418,8 +430,14 @@ public interface IDungeonsBlockProvider {
 		
 		// if frame is still null then use the default
 		if (frame == null) {
-//			logger.debug("Getting element from default stylesheet:" + elem.getName());
-			frame = getDefaultStyleSheet().getLayouts().get(Layout.DEFAULT_NAME).getFrames().get(Elements.ElementsEnum.getByValue(elem.getName()).name());
+			logger.debug("blcok provider class -> {}", this.getClass().getSimpleName());
+			logger.debug("Getting element from default stylesheet:" + elem.getName());			
+			logger.debug("default style sheet -> {}", DungeonGenerator.getDefaultStyleSheet());
+			logger.debug("layouts -> {}", getDefaultStyleSheet().getLayouts());
+			logger.debug("frames -> {}", getDefaultStyleSheet().getLayouts().get(Layout.DEFAULT_NAME).getFrames());
+			logger.debug("element -> {}", elem.getName());
+			// TODO fix where the default style sheet is coming from --> should only be one default location.
+			frame = DungeonGenerator.getDefaultStyleSheet().getLayouts().get(Layout.DEFAULT_NAME).getFrames().get(Elements.ElementsEnum.getByValue(elem.getName()).name());
 		}
 		
 		// TODO throw custom error UNKNOWN IArchitecturalElement

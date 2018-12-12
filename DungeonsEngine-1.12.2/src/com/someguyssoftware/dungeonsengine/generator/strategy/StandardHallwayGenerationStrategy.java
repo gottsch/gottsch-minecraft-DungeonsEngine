@@ -70,7 +70,7 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 	 */
 	@Override
 	public void generate(World world, Random random, IDecoratedRoom room, Theme theme, StyleSheet styleSheet, LevelConfig config) {
-		IHallway hallway = (IHallway)room;
+		IHallway hallway = (IHallway)room.getRoom();
 		IBlockState blockState = null;
 		Map<ICoords, Arrangement> postProcessMap = new HashMap<>();
 		Multimap<IArchitecturalElement, ICoords> blueprint = room.getFloorMap();
@@ -135,7 +135,7 @@ public class StandardHallwayGenerationStrategy extends AbstractRoomGenerationStr
 						// lastly, check against all other hallways
 						if (buildBlock) {
 							for (IHallway r : getHallways()) {
-								AxisAlignedBB bb = ((IDecoratedRoom)r).getBoundingBox();
+								AxisAlignedBB bb = ((IRoom)r).getBoundingBox();
 								if (box.intersects(bb)) {
 //									Dungeons2.log.debug(String.format("Hallway @ %s intersects with hallway @ %s", box, bb));
 									buildBlock = false;

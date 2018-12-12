@@ -113,7 +113,7 @@ public class LevelBuilder implements ILevelBuilder {
 	/*
 	 * rooms that are randomly generated
 	 */
-	List<IRoom> spawned = null;
+	List<IRoom> spawned = new ArrayList<>();;
 
 	/*
 	 * special rooms which are designed as <em>fixed position</em>. ex. ladder rooms, treasure rooms, boss rooms.
@@ -125,35 +125,35 @@ public class LevelBuilder implements ILevelBuilder {
 	/*
 	 * resultant list of buffered/spaced rooms on a single level.
 	 */
-	List<IRoom> rooms = null;
+	List<IRoom> rooms = new ArrayList<>();
 
 	/*
 	 * resultant list of edges from triangulation of rooms.
 	 */
-	List<Edge> edges = null;
+	List<Edge> edges = new ArrayList<>();
 
 	/*
 	 * resultant list of edges from performing minimum spanning tree on edges
 	 */
-	List<Edge> paths = null;
+	List<Edge> paths = new ArrayList<>();
 
 	/*
 	 * resultant list of horizontal and vertical lines representing hallways that connect all the rooms together
 	 * by "squaring off" the paths
 	 */
-	List<Wayline> waylines = null;
+	List<Wayline> waylines = new ArrayList<>();
 	
 	/*
 	 * resultant list of hallways derived from waylines
 	 */
-	List<Hallway> hallways = null;
+	List<Hallway> hallways = new ArrayList<>();
 	
 	/*
 	 * where the start room should generate if it is not provided
 	 */
 	private ICoords startPoint;
 	
-	private List<IRoom> plannedRooms;
+	private List<IRoom> plannedRooms = new ArrayList<>();
 	
 	/*
 	 * the bounding box in which the entire level must reside

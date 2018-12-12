@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.someguyssoftware.dungeonsengine.config.DungeonConfig;
-import com.someguyssoftware.dungeonsengine.graph.Wayline;
 import com.someguyssoftware.dungeonsengine.style.Theme;
 
 /**
@@ -63,6 +62,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @return the minX
 	 */
+	@Override
 	public Integer getMinX() {
 		return minX;
 	}
@@ -70,6 +70,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @param minX the minX to set
 	 */
+	@Override
 	public void setMinX(Integer minX) {
 		this.minX = minX;
 	}
@@ -77,6 +78,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @return the maxX
 	 */
+	@Override
 	public Integer getMaxX() {
 		return maxX;
 	}
@@ -84,6 +86,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @param maxX the maxX to set
 	 */
+	@Override
 	public void setMaxX(Integer maxX) {
 		this.maxX = maxX;
 	}
@@ -91,6 +94,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @return the minY
 	 */
+	@Override
 	public Integer getMinY() {
 		return minY;
 	}
@@ -98,6 +102,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @param minY the minY to set
 	 */
+	@Override
 	public void setMinY(Integer minY) {
 		this.minY = minY;
 	}
@@ -105,6 +110,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @return the maxY
 	 */
+	@Override
 	public Integer getMaxY() {
 		return maxY;
 	}
@@ -112,6 +118,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @param maxY the maxY to set
 	 */
+	@Override
 	public void setMaxY(Integer maxY) {
 		this.maxY = maxY;
 	}
@@ -119,6 +126,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @return the minZ
 	 */
+	@Override
 	public Integer getMinZ() {
 		return minZ;
 	}
@@ -126,6 +134,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @param minZ the minZ to set
 	 */
+	@Override
 	public void setMinZ(Integer minZ) {
 		this.minZ = minZ;
 	}
@@ -133,6 +142,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @return the maxZ
 	 */
+	@Override
 	public Integer getMaxZ() {
 		return maxZ;
 	}
@@ -140,6 +150,7 @@ public class Dungeon implements IDungeon {
 	/**
 	 * @param maxZ the maxZ to set
 	 */
+	@Override
 	public void setMaxZ(Integer maxZ) {
 		this.maxZ = maxZ;
 	}

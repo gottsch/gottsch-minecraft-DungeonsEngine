@@ -9,6 +9,7 @@ buildscript {
     }
 }
 
+apply plugin: 'net.minecraftforge.gradle.forge'
 
 ext {
     // Open the Git repository in the parent directory.
@@ -21,9 +22,21 @@ ext {
 }
 
 version = "mc${mc_version}-f${forge_version}-${mod_version_type}${mod_version}"
+group = "${package_group}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "${mod_name}"
 
-// Apply the java plugin to add support for Java
-apply plugin: 'java'
+sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+minecraft {
+    version = "${mc_version}-${forge_version}"
+    runDir = "run"
+
+    if (project.hasProperty('mappings_version'))
+        mappings = project.mappings_version
+}
 
 //Optional: change the project structure
 sourceSets.main{
@@ -54,7 +67,15 @@ jar {
 	//	exclude 'META-INF/**'
 	//}
 
-    baseName 'DungeonsEngine'
+    //baseName 'DungeonsEngine'
+    
+       sourceSets {
+        main {
+            java {
+                exclude '**/META-INF/**'
+            }
+        }
+    }
 
 }
 
